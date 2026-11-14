@@ -1,36 +1,168 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product Demand Forecast</title>
+  <title>Demand Forecast · StockSense AI</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0c10'/%3E%3Crect x='7' y='17' width='4.5' height='8' fill='%235b9dff'/%3E%3Crect x='13.75' y='11' width='4.5' height='14' fill='%235b9dff'/%3E%3Crect x='20.5' y='6' width='4.5' height='19' fill='%23e7eaef'/%3E%3C/svg%3E">
+  <script>try { var t = localStorage.getItem("ss-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {}</script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f8fc; color: #18212f; margin: 0; }
-    main { max-width: 980px; margin: 48px auto; padding: 0 20px; } h1 { margin-bottom: 8px; }
-    .controls, .summary { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 24px 0; }
-    select, button { font: inherit; padding: 10px 12px; border: 1px solid #c9d1df; border-radius: 6px; } button { background: #175cd3; color: white; border: 0; cursor: pointer; }
-    .summary, .chart { background: white; border-radius: 8px; padding: 16px; } .chart { margin-bottom: 24px; } .chart h2 { font-size: 18px; margin-top: 0; }
-    table { width: 100%; border-collapse: collapse; background: white; } th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e9f0; } th { background: #eef3ff; }
-    .muted { color: #627086; } .error { color: #b42318; } #chart { width: 100%; height: auto; overflow: visible; }
-    .grid { stroke: #e5e9f0; stroke-width: 1; } .axis { fill: #627086; font-size: 12px; } .line { fill: none; stroke: #175cd3; stroke-width: 3; } .point, .bar { fill: #175cd3; }
+    /* StockSense console theme: shared with Bill Intake and the Assistant. */
+    :root {
+      --bg: #0a0c10; --panel: #10141a; --panel-2: #161b23; --line: #1f2630; --line-2: #2c3542;
+      --ink: #e7eaef; --muted: #818c9b; --accent: #5b9dff; --on-accent: #06101f; --accent-soft: rgba(91, 157, 255, .12);
+      --ok: #3ecf8e; --warn: #f5b83d; --danger: #ff6b6b;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Nirmala UI", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif;
+      --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+    :root[data-theme="light"] {
+      --bg: #f5f6f8; --panel: #ffffff; --panel-2: #eef0f4; --line: #e2e5ea; --line-2: #cdd2da;
+      --ink: #14181f; --muted: #667085; --accent: #2b6cf6; --on-accent: #ffffff; --accent-soft: rgba(43, 108, 246, .1);
+      --ok: #12805c; --warn: #a15c07; --danger: #c0332b;
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; } html[data-theme="light"] { color-scheme: light; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 13.5px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; } ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 10px; border: 2px solid var(--bg); }
+
+    /* top bar */
+    .bar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+    .bar-in { max-width: 1280px; margin: 0 auto; padding: 0 20px; height: 46px; display: flex; align-items: center; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 9px; font: 700 12.5px var(--mono); letter-spacing: .14em; color: var(--ink); white-space: nowrap; }
+    .logo:hover { text-decoration: none; } .logo svg { width: 18px; height: 18px; } .logo .sub { color: var(--muted); font-weight: 500; }
+    .nav { display: flex; align-self: stretch; }
+    .nav a { display: flex; align-items: center; padding: 0 14px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .nav a:hover { color: var(--ink); text-decoration: none; } .nav a.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .spacer { flex: 1; }
+    .icon-btn { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); cursor: pointer; }
+    .icon-btn:hover { color: var(--ink); border-color: var(--muted); } .icon-btn svg { width: 15px; height: 15px; }
+
+    main { max-width: 1280px; margin: 0 auto; padding: 22px 20px 64px; }
+    .head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+    .head h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+
+    /* controls */
+    .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .controls label { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; margin-right: -6px; }
+    select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px; padding: 5px 9px; min-height: 30px; min-width: 150px; }
+    select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+    button { font: 600 12px var(--font); letter-spacing: .04em; display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px; min-height: 30px; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--ink); cursor: pointer; }
+    button:hover:not(:disabled) { background: var(--panel-2); } button:disabled { color: var(--muted); cursor: wait; }
+    #status { font: 12px var(--mono); margin-left: auto; }
+    #status.error { color: var(--danger); }
+    .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: spin .8s linear infinite; display: inline-block; vertical-align: -2px; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* stat strip */
+    .summary { display: flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); margin-bottom: 22px; }
+    .stat { flex: 1 1 180px; padding: 10px 16px; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+    .stat:last-child { border-right: 0; }
+    .stat b { font: 600 22px var(--mono); letter-spacing: -.02em; line-height: 1.2; } .stat span { font-size: 11.5px; color: var(--muted); }
+    .stat.accent b { color: var(--accent); }
+
+    /* sections */
+    section.panel { margin-bottom: 26px; }
+    .sec-title { font: 600 10.5px var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-bottom: 7px; margin: 0 0 10px; border-bottom: 1px solid var(--line-2); display: flex; justify-content: space-between; align-items: baseline; }
+    .sec-title .small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+    /* chart */
+    .chartbox { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 12px 8px 4px; }
+    #chart { width: 100%; height: auto; overflow: visible; display: block; }
+    .grid { stroke: var(--line); stroke-width: 1; } .axis { fill: var(--muted); font: 11px var(--font); }
+    .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .area { fill: url(#areaFill); stroke: none; }
+    .point { fill: var(--bg); stroke: var(--accent); stroke-width: 2; } .point:hover { fill: var(--accent); }
+    .bar { fill: var(--accent); } .val { fill: var(--ink); font: 600 11px var(--mono); }
+
+    /* tables */
+    .table-wrap { overflow: auto; max-height: 440px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { position: sticky; top: 0; background: var(--panel); font: 600 10.5px var(--font); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line-2); z-index: 1; }
+    tbody tr:last-child td { border-bottom: 0; } tbody tr:hover td { background: var(--panel-2); }
+    #product-summary th:not(:first-child), #product-summary td:not(:first-child), #results th:last-child, #results td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    #product-summary td:not(:first-child), #results td:last-child { font-family: var(--mono); }
+    #product-summary td.total, #product-summary th:last-child { border-left: 1px solid var(--line-2); font-weight: 600; }
+    .pid { font: 600 12px var(--mono); color: var(--accent); margin-right: 8px; }
+
+    @media (max-width: 700px) {
+      .bar-in { padding: 0 14px; gap: 10px; } .logo .sub { display: none; }
+      .nav { overflow-x: auto; scrollbar-width: none; } .nav a { padding: 0 9px; white-space: nowrap; flex: none; }
+      .icon-btn { flex: none; }
+      main { padding: 16px 14px 56px; } #status { margin-left: 0; width: 100%; }
+      .controls { gap: 8px 10px; } .controls label { display: none; }
+      select { min-width: 0; flex: 1 1 40%; } #load { flex: 1 1 100%; justify-content: center; }
+      .chartbox { overflow-x: auto; } #chart { min-width: 600px; }
+      .sec-title { flex-direction: column; gap: 2px; }
+    }
   </style>
 </head>
 <body>
+  <header class="bar">
+    <div class="bar-in">
+      <a class="logo" href="/" aria-label="StockSense AI Demand Forecast">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="17" width="5.5" height="10" fill="var(--accent)"/><rect x="13.25" y="11" width="5.5" height="16" fill="var(--accent)"/><rect x="21.5" y="5" width="5.5" height="22" fill="var(--ink)"/></svg>
+        STOCKSENSE <span class="sub">/ FORECAST</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="/" class="active">Forecast</a>
+        <a href="/insights">Insights</a>
+        <a href="http://localhost:8000" target="_blank" rel="noopener">Bill Intake &#8599;</a>
+        <a href="http://localhost:5173" target="_blank" rel="noopener">Assistant &#8599;</a>
+      </nav>
+      <span class="spacer"></span>
+      <button type="button" class="icon-btn" id="theme-toggle" title="Switch light / dark" aria-label="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </div>
+  </header>
+
   <main>
-    <h1>Product Demand Forecast</h1>
-    <p class="muted">Transformer-based six-month monthly demand forecast.</p>
+    <div class="head">
+      <h1>Product demand forecast</h1>
+      <span class="muted">Transformer model &middot; six-month monthly demand per product</span>
+    </div>
+
     <div class="controls">
       <label for="product">Product</label><select id="product"><option value="all">All products</option></select>
       <label for="month">Month</label><select id="month"><option value="all">All 6 months</option></select>
-      <button id="load">Get forecast</button>
+      <button id="load">Refresh forecast</button>
+      <div id="status" class="muted">Load a forecast to begin.</div>
     </div>
-    <div id="status" class="muted">Load a forecast to begin.</div>
+
     <div id="summary" class="summary" hidden></div>
-    <section id="chart-panel" class="chart" hidden><h2>Monthly forecast</h2><svg id="chart" viewBox="0 0 820 320" role="img" aria-label="Monthly demand forecast chart"></svg></section>
-    <table id="results" hidden><thead><tr><th>Month</th><th>Product</th><th>Forecast quantity</th></tr></thead><tbody></tbody></table>
-    <section id="product-summary-panel" class="chart" hidden><h2>Product-wise six-month forecast</h2><table id="product-summary"><thead></thead><tbody></tbody></table></section>
+
+    <section id="chart-panel" class="panel" hidden>
+      <div class="sec-title">Monthly forecast <span class="small muted">total units across the selected products</span></div>
+      <div class="chartbox">
+        <svg id="chart" viewBox="0 0 820 320" role="img" aria-label="Monthly demand forecast chart"></svg>
+      </div>
+    </section>
+
+    <section id="product-summary-panel" class="panel" hidden>
+      <div class="sec-title">Product-wise six-month forecast <span class="small muted">darker cell = higher demand for that product</span></div>
+      <div class="table-wrap"><table id="product-summary"><thead></thead><tbody></tbody></table></div>
+    </section>
+
+    <section id="detail-panel" class="panel" hidden>
+      <div class="sec-title">All forecast rows</div>
+      <div class="table-wrap">
+        <table id="results"><thead><tr><th>Month</th><th>Product</th><th>Forecast quantity</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
   </main>
+
   <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement; const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next); try { localStorage.setItem('ss-theme', next); } catch (e) {}
+    });
+
     const productSelect = document.getElementById('product');
     const monthSelect = document.getElementById('month');
     const status = document.getElementById('status');
@@ -39,25 +171,72 @@
     const body = table.querySelector('tbody');
     const productSummaryPanel = document.getElementById('product-summary-panel');
     const productSummary = document.getElementById('product-summary');
+    const loadButton = document.getElementById('load');
     let allForecasts = [];
+    const esc = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     function displayQuantity(value) { return Math.ceil(Number(value)); }
+    const fmt = value => displayQuantity(value).toLocaleString('en-IN');
     function filteredForecasts() { return allForecasts.filter(row => (productSelect.value === 'all' || row.product_id === productSelect.value) && (monthSelect.value === 'all' || row.month === monthSelect.value)); }
+
     function renderChart(rows) {
       const panel = document.getElementById('chart-panel'); const chart = document.getElementById('chart'); const monthly = {};
       rows.forEach(row => monthly[row.month] = (monthly[row.month] || 0) + Number(row.forecast_quantity)); const points = Object.entries(monthly).sort();
       if (!points.length) { panel.hidden = true; return; } panel.hidden = false;
-      const left = 52, top = 20, width = 820, height = 320, bottom = 46, plotWidth = width - left - 22, plotHeight = height - top - bottom;
+      const left = 56, top = 20, width = 820, height = 320, bottom = 46, plotWidth = width - left - 22, plotHeight = height - top - bottom;
       const max = Math.max(...points.map(([, value]) => value), 1) * 1.15; const x = index => points.length === 1 ? left + plotWidth / 2 : left + index * plotWidth / (points.length - 1); const y = value => top + plotHeight - value / max * plotHeight;
-      const grid = [0, max / 2, max].map(value => `<line class="grid" x1="${left}" x2="${width - 22}" y1="${y(value)}" y2="${y(value)}"/><text class="axis" x="${left - 8}" y="${y(value) + 4}" text-anchor="end">${displayQuantity(value)}</text>`).join(''); const axisTitles = `<text class="axis" x="${left + plotWidth / 2}" y="${height - 2}" text-anchor="middle">Month</text><text class="axis" transform="translate(14 ${top + plotHeight / 2}) rotate(-90)" text-anchor="middle">Forecast quantity (units)</text>`;
+      const grid = [0, max / 4, max / 2, max * 3 / 4, max].map(value => `<line class="grid" x1="${left}" x2="${width - 22}" y1="${y(value)}" y2="${y(value)}"/><text class="axis" x="${left - 8}" y="${y(value) + 4}" text-anchor="end">${fmt(value)}</text>`).join('');
+      const axisTitles = `<text class="axis" x="${left + plotWidth / 2}" y="${height - 2}" text-anchor="middle">Month</text><text class="axis" transform="translate(14 ${top + plotHeight / 2}) rotate(-90)" text-anchor="middle">Forecast quantity (units)</text>`;
       const labels = points.map(([month], index) => `<text class="axis" x="${x(index)}" y="${height - 18}" text-anchor="middle">${month}</text>`).join('');
-      if (points.length === 1) { const value = points[0][1], barWidth = 90; chart.innerHTML = `${grid}<rect class="bar" x="${x(0) - barWidth / 2}" y="${y(value)}" width="${barWidth}" height="${top + plotHeight - y(value)}"/><text class="axis" x="${x(0)}" y="${y(value) - 8}" text-anchor="middle">${displayQuantity(value)}</text>${labels}${axisTitles}`; return; }
-      const path = points.map(([, value], index) => `${index ? 'L' : 'M'} ${x(index)} ${y(value)}`).join(' '); const dots = points.map(([, value], index) => `<circle class="point" cx="${x(index)}" cy="${y(value)}" r="4"><title>${points[index][0]}: ${displayQuantity(value)} units</title></circle>`).join(''); chart.innerHTML = `${grid}<path class="line" d="${path}"/>${dots}${labels}${axisTitles}`;
+      if (points.length === 1) { const value = points[0][1], barWidth = 90; chart.innerHTML = `${grid}<rect class="bar" x="${x(0) - barWidth / 2}" y="${y(value)}" width="${barWidth}" height="${top + plotHeight - y(value)}" rx="3"/><text class="val" x="${x(0)}" y="${y(value) - 8}" text-anchor="middle">${fmt(value)}</text>${labels}${axisTitles}`; return; }
+      const path = points.map(([, value], index) => `${index ? 'L' : 'M'} ${x(index)} ${y(value)}`).join(' ');
+      const area = `${path} L ${x(points.length - 1)} ${top + plotHeight} L ${x(0)} ${top + plotHeight} Z`;
+      const defs = `<defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity=".28"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>`;
+      const dots = points.map(([, value], index) => `<circle class="point" cx="${x(index)}" cy="${y(value)}" r="4.5"><title>${points[index][0]}: ${fmt(value)} units</title></circle>`).join('');
+      const values = points.map(([, value], index) => `<text class="val" x="${x(index)}" y="${y(value) - 12}" text-anchor="middle">${fmt(value)}</text>`).join('');
+      chart.innerHTML = `${defs}${grid}<path class="area" d="${area}"/><path class="line" d="${path}"/>${dots}${values}${labels}${axisTitles}`;
     }
-    function renderProductSummary() { const months = [...new Set(allForecasts.map(row => row.month))].sort(); const selectedProduct = productSelect.value; const rows = allForecasts.filter(row => selectedProduct === 'all' || row.product_id === selectedProduct); const products = [...new Map(rows.map(row => [row.product_id, row.product_name])).entries()].sort(); productSummary.querySelector('thead').innerHTML = `<tr><th>Product</th>${months.map(month => `<th>${month}</th>`).join('')}</tr>`; productSummary.querySelector('tbody').innerHTML = products.map(([id, name]) => `<tr><td>${id} - ${name}</td>${months.map(month => { const row = rows.find(item => item.product_id === id && item.month === month); return `<td>${row ? displayQuantity(row.forecast_quantity) : '-'}</td>`; }).join('')}</tr>`).join(''); productSummaryPanel.hidden = false; }
-    function render() { const rows = filteredForecasts(); body.innerHTML = rows.map(row => `<tr><td>${row.month}</td><td>${row.product_id} - ${row.product_name}</td><td>${displayQuantity(row.forecast_quantity)}</td></tr>`).join(''); const total = rows.reduce((sum, row) => sum + Number(row.forecast_quantity), 0); summary.textContent = `${rows.length} product-month forecasts. Total predicted demand: ${displayQuantity(total)} units`; summary.hidden = false; table.hidden = false; renderChart(rows); renderProductSummary(); }
-    function addOptions() { if (productSelect.options.length === 1) [...new Set(allForecasts.map(row => `${row.product_id}|${row.product_name}`))].sort().forEach(value => { const [id, name] = value.split('|'); productSelect.add(new Option(`${id} - ${name}`, id)); }); if (monthSelect.options.length === 1) [...new Set(allForecasts.map(row => row.month))].sort().forEach(month => monthSelect.add(new Option(month, month))); }
-    async function loadForecast() { status.className = 'muted'; status.textContent = 'Loading forecast...'; try { const response = await fetch('/api/forecast?months=6'); if (!response.ok) throw new Error('Forecast request failed'); const data = await response.json(); allForecasts = data.forecasts; addOptions(); render(); status.textContent = `${data.model}: ${data.forecast_start} to ${data.forecast_end}`; } catch (error) { status.className = 'error'; status.textContent = error.message; } }
-    document.getElementById('load').addEventListener('click', loadForecast); productSelect.addEventListener('change', render); monthSelect.addEventListener('change', render);
+
+    function renderProductSummary() {
+      const months = [...new Set(allForecasts.map(row => row.month))].sort(); const selectedProduct = productSelect.value;
+      const rows = allForecasts.filter(row => selectedProduct === 'all' || row.product_id === selectedProduct);
+      const products = [...new Map(rows.map(row => [row.product_id, row.product_name])).entries()].sort();
+      productSummary.querySelector('thead').innerHTML = `<tr><th>Product</th>${months.map(month => `<th>${month}</th>`).join('')}<th>Total</th></tr>`;
+      productSummary.querySelector('tbody').innerHTML = products.map(([id, name]) => {
+        const values = months.map(month => { const row = rows.find(item => item.product_id === id && item.month === month); return row ? Number(row.forecast_quantity) : null; });
+        const top = Math.max(...values.map(v => v || 0), 1); const total = values.reduce((sum, v) => sum + (v || 0), 0);
+        const cells = values.map(v => v === null ? '<td>-</td>' : `<td style="background:color-mix(in srgb, var(--accent) ${Math.round(v / top * 38)}%, transparent)">${fmt(v)}</td>`).join('');
+        return `<tr><td><span class="pid">${esc(id)}</span>${esc(name)}</td>${cells}<td class="total">${fmt(total)}</td></tr>`;
+      }).join('');
+      productSummaryPanel.hidden = false;
+    }
+
+    function render() {
+      const rows = filteredForecasts();
+      body.innerHTML = rows.map(row => `<tr><td>${esc(row.month)}</td><td><span class="pid">${esc(row.product_id)}</span>${esc(row.product_name)}</td><td>${fmt(row.forecast_quantity)}</td></tr>`).join('');
+      const total = rows.reduce((sum, row) => sum + Number(row.forecast_quantity), 0);
+      const byMonth = {}; rows.forEach(row => byMonth[row.month] = (byMonth[row.month] || 0) + Number(row.forecast_quantity));
+      const peak = Object.entries(byMonth).sort((a, b) => b[1] - a[1])[0];
+      const productCount = new Set(rows.map(row => row.product_id)).size;
+      summary.innerHTML = `<div class="stat accent"><b>${fmt(total)}</b><span>total predicted demand (units)</span></div><div class="stat"><b>${productCount}</b><span>products</span></div><div class="stat"><b>${rows.length}</b><span>product-month forecasts</span></div><div class="stat"><b>${peak ? peak[0] : '-'}</b><span>peak month${peak ? ' (' + fmt(peak[1]) + ' units)' : ''}</span></div>`;
+      summary.hidden = false; document.getElementById('detail-panel').hidden = false; table.hidden = false; renderChart(rows); renderProductSummary();
+    }
+
+    function addOptions() {
+      if (productSelect.options.length === 1) [...new Set(allForecasts.map(row => `${row.product_id}|${row.product_name}`))].sort().forEach(value => { const [id, name] = value.split('|'); productSelect.add(new Option(`${id} - ${name}`, id)); });
+      if (monthSelect.options.length === 1) [...new Set(allForecasts.map(row => row.month))].sort().forEach(month => monthSelect.add(new Option(month, month)));
+    }
+
+    async function loadForecast() {
+      status.className = 'muted'; status.innerHTML = '<span class="spin"></span>Loading forecast (the first run takes about 15 seconds)'; loadButton.disabled = true;
+      try {
+        const response = await fetch('/api/forecast?months=6'); if (!response.ok) throw new Error('Forecast request failed');
+        const data = await response.json(); allForecasts = data.forecasts; addOptions(); render();
+        status.textContent = `${data.model} · ${data.forecast_start} to ${data.forecast_end}`;
+      } catch (error) { status.className = 'error'; status.textContent = error.message; }
+      finally { loadButton.disabled = false; }
+    }
+    loadButton.addEventListener('click', loadForecast); productSelect.addEventListener('change', render); monthSelect.addEventListener('change', render);
+    loadForecast();
   </script>
 </body>
 </html>

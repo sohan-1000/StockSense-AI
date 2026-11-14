@@ -9,9 +9,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from forecast_transformer import generate_monthly_forecast
+from insights import router as insights_router
 
 
 app = FastAPI(title="Product Demand Forecast API", version="1.0.0")
+app.include_router(insights_router)
 STATIC_DIR = Path("static")
 
 

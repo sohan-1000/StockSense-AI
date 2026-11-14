@@ -1,0 +1,7 @@
+supplier_id,supplier_name,city,average_lead_time_days,minimum_order_value
+S001,Fresh Dairy Distributors,Hyderabad,2,20
+S002,Metro Foods Supply,Hyderabad,4,30
+S003,Sri Lakshmi Wholesale,Secunderabad,5,25
+S004,City Beverages Agency,Hyderabad,3,24
+S005,Daily Needs Distributors,Kukatpally,6,15
+S006,Green Basket Produce,Hyderabad,1,10

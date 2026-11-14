@@ -1,0 +1,21 @@
+TEST FIXTURE - not real business content. Used only by tests/test_rag.py to verify the RAG pipeline; it is removed from the database after the test.
+
+Shop Operations Guide (test fixture)
+
+1. Storage instructions
+Milk, curd and paneer must be stored below 5 degrees Celsius. Open packs of curd should be sold within 2 days.
+Bread and bakery items should be kept in a dry shelf away from sunlight and sold within their printed shelf life.
+Rice, dal and flour must be stored in sealed containers off the floor to avoid moisture and insects.
+
+2. Return policy
+Packaged items can be returned within 7 days with the bill if the seal is unbroken.
+Perishable items such as milk, curd, paneer and vegetables cannot be returned after 24 hours of purchase.
+Damaged products are replaced by the supplier if reported within 48 hours of delivery.
+
+3. Supplier payment terms
+Payment to all suppliers is due within 15 days of the invoice date. Early payment within 5 days earns a 2 percent discount.
+Orders below the supplier's minimum order value are charged a flat delivery fee of 50 rupees.
+
+4. Reducing wastage
+Follow first-expiry-first-out: place the batches that expire earliest at the front of the shelf.
+Mark down items by 20 percent when they are within 2 days of expiry to sell them before they spoil.

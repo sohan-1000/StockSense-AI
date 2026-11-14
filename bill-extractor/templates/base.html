@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Bill Intake · StockSense AI{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0c10'/%3E%3Crect x='7' y='17' width='4.5' height='8' fill='%235b9dff'/%3E%3Crect x='13.75' y='11' width='4.5' height='14' fill='%235b9dff'/%3E%3Crect x='20.5' y='6' width='4.5' height='19' fill='%23e7eaef'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    try { var t = localStorage.getItem("ss-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-in">
+      <a class="logo" href="/" aria-label="StockSense AI Bill Intake">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="17" width="5.5" height="10" fill="var(--accent)"/><rect x="13.25" y="11" width="5.5" height="16" fill="var(--accent)"/><rect x="21.5" y="5" width="5.5" height="22" fill="var(--ink)"/></svg>
+        STOCKSENSE <span class="sub">/ BILL INTAKE</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="/" class="active">Bills</a>
+        <a href="{{ assistant_url }}" target="_blank" rel="noopener">Assistant &#8599;</a>
+      </nav>
+      <span class="spacer"></span>
+      <button type="button" class="icon-btn" id="theme-toggle" title="Switch light / dark" aria-label="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </div>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <script>
+    document.getElementById("theme-toggle").addEventListener("click", function () {
+      var root = document.documentElement;
+      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("ss-theme", next); } catch (e) {}
+    });
+  </script>
+</body>
+</html>

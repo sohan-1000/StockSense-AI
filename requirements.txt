@@ -1,0 +1,14 @@
+# Demand forecasting app (app.py + forecast_transformer.py) in the repo root.
+#
+# Python 3.9 - 3.11 only (TensorFlow 2.15 has no wheels for 3.12+).
+# Run from the repo root:   uvicorn app:app --reload --port 8002
+#
+# TensorFlow is pinned to 2.15 on purpose: models/global_transformer_demand_model.keras is a
+# legacy HDF5 file with a ".keras" name. TensorFlow 2.15 (Keras 2) opens it; TensorFlow 2.16+
+# (Keras 3) refuses with "File not found ... accessible .keras zip file".
+tensorflow==2.15.1
+numpy>=1.23,<2
+pandas>=1.5
+fastapi>=0.110
+uvicorn[standard]>=0.29
+psycopg[binary]>=3.1   # Insights page: read-only queries on the retail and bill databases

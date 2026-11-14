@@ -1,0 +1,31 @@
+# ---- secrets: never commit ----
+.env
+.env.*
+*.env
+
+# ---- local database (rebuilt on any machine with: python -m app.db.ingest) ----
+.pgdata/
+
+# ---- uploaded documents (users re-upload through the UI) ----
+backend/uploads/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# ---- Node / frontend build ----
+node_modules/
+frontend/dist/
+
+# ---- regenerated evaluation run output (the *_report.md summaries ARE kept) ----
+backend/tests/*_results.json
+backend/tests/*_stdout.txt
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

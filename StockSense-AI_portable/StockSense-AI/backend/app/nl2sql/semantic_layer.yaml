@@ -1,0 +1,163 @@
+# Semantic layer: business meaning for every table/column the chatbot may use.
+# Types, primary keys and foreign keys are NOT written here - they are read from the live database
+# (information_schema), so they can never drift. Views have no FKs, so their join keys are declared below.
+# This file is the single source for: (1) the schema-linking catalog, (2) the SQL prompt, (3) the validator allowlist.
+
+business_rules:
+  - "Revenue = quantity_sold * selling_price from the SALES side (sales.selling_price / v_sales_enriched.revenue). NEVER use products.selling_price for revenue: it is only the list price, sales.selling_price is lower on promotion days."
+  - "Profit = quantity_sold * (sales.selling_price - products.unit_cost); v_sales_enriched.profit already has this."
+  - "'Sales' / 'units sold' / 'quantity sold' means SUM(quantity_sold). 'Sales value' / 'revenue' / 'turnover' means SUM(revenue)."
+  - "Data covers 2025-01-01 to the data end date. The inventory snapshot date is the data end date. Dates are resolved by the application and given to you explicitly; use exactly those dates."
+  - "Prefer the views (v_sales_enriched, v_inventory_status, v_batch_expiry) when they contain the needed columns - they already contain the joins and formulas."
+  - "Low stock / needs reordering = v_inventory_status.below_reorder_point (current_stock <= reorder_point)."
+  - "Stockout risk = days_of_cover < supplier_lead_time_days (stock will run out before a reorder could arrive)."
+  - "Expiring soon = v_batch_expiry.days_to_expiry <= 7 unless the user gives another number of days. days_to_expiry is measured from the inventory snapshot date. Expiry is per batch (batches), not per product."
+  - "There are TWO lead-time columns: products.supplier_lead_time_days (per product, used for stockout logic) and suppliers.average_lead_time_days (per supplier). Use the one in the table the question is about; for 'supplier lead time' use suppliers.average_lead_time_days."
+  - "Sales are daily per-product totals (30 products x each day). There are no customers, bills, stores, returns, wastage or purchase orders in the data - such questions are UNANSWERABLE."
+  - "Many sales rows have quantity_sold = 0 (no sale that day). These rows are real; do not filter them out unless asked."
+  - "Festival names (sales.festival / calendar.festival) are NULL on normal days."
+  - "Always show human-readable names (product_name, supplier_name, category) in results, never only IDs. For batch questions also include batch_id."
+  - "'Which products ...' / 'which suppliers ...' questions list each product/supplier ONCE: use DISTINCT or GROUP BY, and select only the columns needed to answer."
+  - "When comparing time periods (months, years, festival vs normal days), return ONE ROW PER PERIOD (a period label column plus the metric) so it can be charted. Never pivot periods into separate columns."
+  - "A condition 'on a day' / 'in a single day' / 'on a promotion day' applies to individual daily rows (WHERE quantity_sold > N), not to a SUM over the period."
+  - "Average daily units for a category or the whole shop = SUM(quantity_sold) / COUNT(DISTINCT date). AVG(quantity_sold) is the average per product per day, which is a different number."
+  - "To find the date (or product, or category) where an aggregate is highest or lowest: GROUP BY it, ORDER BY the aggregate DESC/ASC, LIMIT 1. Never use MAX(date) or MAX() of a non-aggregated column to pick the row."
+  - "If the user's text exactly matches a listed product_name, filter with equality (product_name = 'Bread'); use ILIKE only when it does not match exactly. 'Bread' and 'Brown Bread' are different products."
+  - "'Average selling price' of products means products.selling_price (the list price). Use sales.selling_price only if the user asks about the price actually charged in sales or on promotion."
+
+tables:
+  suppliers:
+    kind: table
+    description: "Supplier directory: who supplies products, where they are, lead time and minimum order value. 6 suppliers."
+    columns:
+      supplier_id: {description: "Supplier code, e.g. S001", synonyms: [vendor id]}
+      supplier_name: {description: "Supplier / vendor / distributor name", synonyms: [vendor, distributor, wholesaler], sample_values: auto}
+      city: {description: "City the supplier is based in", sample_values: auto}
+      average_lead_time_days: {description: "Average days the supplier takes to deliver after an order", synonyms: [delivery time, supplier lead time]}
+      minimum_order_value: {description: "Minimum order value (rupees) the supplier accepts", synonyms: [MOV, minimum order amount]}
+
+  products:
+    kind: table
+    description: "Product master: 30 grocery/kirana products with category, list price, cost, shelf life, ordering settings and supplier."
+    columns:
+      product_id: {description: "Product code, e.g. P001", synonyms: [sku, item id]}
+      product_name: {description: "Product name", synonyms: [item, product], sample_values: auto}
+      category: {description: "Product category", sample_values: auto, synonyms: [department, product type]}
+      selling_price: {description: "Standard LIST price per unit (rupees). NOT the price actually charged on a given day - for that use sales.selling_price.", synonyms: [mrp, list price, price]}
+      unit_cost: {description: "Purchase cost per unit (rupees)", synonyms: [cost price, buying price, cost]}
+      shelf_life_days: {description: "Number of days the product stays sellable after receipt", synonyms: [shelf life, perishability]}
+      supplier_lead_time_days: {description: "Days this product takes to arrive after ordering", synonyms: [lead time]}
+      minimum_order_quantity: {description: "Smallest quantity that can be ordered from the supplier for this product", synonyms: [MOQ]}
+      base_daily_demand: {description: "Baseline expected units sold per day (modelling parameter)", synonyms: [expected demand]}
+      supplier_id: {description: "Supplier of this product (FK to suppliers)"}
+      reorder_target_days: {description: "Target number of days of stock to hold when reordering"}
+
+  calendar:
+    kind: table
+    description: "Date dimension (2025-01-01..data end): weekday, weekend flag, month and an illustrative festival calendar."
+    columns:
+      date: {description: "Calendar date", synonyms: [day]}
+      day_of_week: {description: "Weekday name, e.g. Monday", sample_values: auto}
+      is_weekend: {description: "True on Saturday/Sunday"}
+      month: {description: "Month number 1-12 (does NOT include the year)"}
+      festival: {description: "Festival name on that date, NULL on normal days", sample_values: auto}
+      is_festival: {description: "True if the date is a festival day"}
+
+  inventory:
+    kind: table
+    description: "CURRENT stock snapshot, one row per product (as of snapshot_date). Not a history."
+    columns:
+      product_id: {description: "Product code (PK and FK to products)"}
+      current_stock: {description: "Units currently in stock", synonyms: [stock, quantity on hand, units left, stock level]}
+      snapshot_date: {description: "Date the snapshot was taken (data end date)"}
+      avg_daily_sales_last_30d: {description: "Average units sold per day over the 30 days before the snapshot", synonyms: [daily sales rate, run rate, velocity]}
+      reorder_point: {description: "Stock level at or below which the product should be reordered", synonyms: [reorder level, ROP]}
+
+  batches:
+    kind: table
+    description: "Current stock split into batches with received and expiry dates (51 batches). Sum of quantity_remaining per product equals inventory.current_stock."
+    columns:
+      batch_id: {description: "Batch code, e.g. B00101"}
+      product_id: {description: "Product of the batch (FK to products)"}
+      quantity_remaining: {description: "Units of this batch still in stock", synonyms: [batch quantity]}
+      received_date: {description: "Date the batch was received", synonyms: [arrival date]}
+      expiry_date: {description: "Date the batch expires", synonyms: [expiry, best before, use by]}
+
+  sales:
+    kind: table
+    description: "Daily sales per product, 2025-01-01 to data end (one row per date x product, 20,070 rows). Raw table - prefer v_sales_enriched when you need product names, categories, revenue or profit."
+    columns:
+      date: {description: "Sale date", synonyms: [day, sale date]}
+      product_id: {description: "Product sold (FK to products)"}
+      quantity_sold: {description: "Units sold that day (0 = no sale)", synonyms: [units sold, sales quantity, qty]}
+      promotion_applied: {description: "True if a promotion/discount applied that day", synonyms: [discount, offer, promo]}
+      selling_price: {description: "ACTUAL unit price charged that day (rupees); lower than products.selling_price on promo days"}
+      festival: {description: "Festival name on that date, NULL on normal days", sample_values: auto}
+
+  v_sales_enriched:
+    kind: view
+    description: "Sales rows already joined with product, category, supplier and calendar, with revenue and profit computed. BEST choice for any sales, revenue, profit, trend, category, supplier-sales, weekday or festival question."
+    relationships:
+      - {to: v_inventory_status, join: "v_sales_enriched.product_id = v_inventory_status.product_id"}
+      - {to: v_batch_expiry, join: "v_sales_enriched.product_id = v_batch_expiry.product_id"}
+    columns:
+      date: {description: "Sale date"}
+      year: {description: "Calendar year of the sale (e.g. 2026)"}
+      month: {description: "Month number 1-12. Combine with year or a date range - months repeat across years."}
+      day_of_week: {description: "Weekday name", sample_values: auto}
+      is_weekend: {description: "True on Saturday/Sunday"}
+      product_id: {description: "Product code"}
+      product_name: {description: "Product name", sample_values: auto}
+      category: {description: "Product category", sample_values: auto}
+      supplier_id: {description: "Supplier code"}
+      supplier_name: {description: "Supplier name", sample_values: auto}
+      quantity_sold: {description: "Units sold that day"}
+      selling_price: {description: "Actual unit price that day"}
+      unit_cost: {description: "Unit cost of the product"}
+      promotion_applied: {description: "True if promotion applied"}
+      festival: {description: "Festival name or NULL", sample_values: auto}
+      revenue: {description: "quantity_sold * selling_price (rupees). Use SUM(revenue) for revenue."}
+      profit: {description: "quantity_sold * (selling_price - unit_cost) (rupees). Use SUM(profit) for profit."}
+
+  v_inventory_status:
+    kind: view
+    description: "Current inventory per product (30 rows) joined with product, supplier and reorder logic. BEST choice for stock level, low stock, reorder, days of cover, stockout risk and stock value questions."
+    relationships:
+      - {to: v_batch_expiry, join: "v_inventory_status.product_id = v_batch_expiry.product_id"}
+      - {to: v_sales_enriched, join: "v_inventory_status.product_id = v_sales_enriched.product_id"}
+    columns:
+      product_id: {description: "Product code"}
+      product_name: {description: "Product name", sample_values: auto}
+      category: {description: "Product category", sample_values: auto}
+      supplier_id: {description: "Supplier code"}
+      supplier_name: {description: "Supplier name", sample_values: auto}
+      current_stock: {description: "Units in stock now"}
+      snapshot_date: {description: "Date of the stock snapshot"}
+      avg_daily_sales_last_30d: {description: "Average units sold per day over the last 30 days"}
+      reorder_point: {description: "Reorder threshold in units"}
+      below_reorder_point: {description: "True when current_stock <= reorder_point (needs reorder)"}
+      days_of_cover: {description: "current_stock / avg_daily_sales_last_30d: days the stock will last"}
+      supplier_lead_time_days: {description: "Days for this product to arrive after ordering"}
+      stockout_risk: {description: "True when days_of_cover < supplier_lead_time_days"}
+      minimum_order_quantity: {description: "Minimum order quantity (MOQ)"}
+      unit_cost: {description: "Unit cost"}
+      selling_price: {description: "List price"}
+      stock_value: {description: "current_stock * unit_cost (rupees): value of stock held at cost"}
+
+  v_batch_expiry:
+    kind: view
+    description: "Each batch with product info and days until expiry (51 rows). BEST choice for expiry, expiring-soon, FEFO and value-at-risk questions."
+    relationships:
+      - {to: v_inventory_status, join: "v_batch_expiry.product_id = v_inventory_status.product_id"}
+      - {to: v_sales_enriched, join: "v_batch_expiry.product_id = v_sales_enriched.product_id"}
+    columns:
+      batch_id: {description: "Batch code"}
+      product_id: {description: "Product code"}
+      product_name: {description: "Product name", sample_values: auto}
+      category: {description: "Product category", sample_values: auto}
+      quantity_remaining: {description: "Units left in this batch"}
+      received_date: {description: "Date the batch was received"}
+      expiry_date: {description: "Date the batch expires"}
+      days_to_expiry: {description: "expiry_date minus the inventory snapshot date, in days (can only be >= 0 in current data)"}
+      unit_cost: {description: "Unit cost"}
+      value_at_risk: {description: "quantity_remaining * unit_cost (rupees): cost of stock in this batch"}

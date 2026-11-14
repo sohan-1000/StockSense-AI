@@ -1,0 +1,191 @@
+# Few-shot question -> SQL pairs (hand-written). The most similar ones are shown to the SQL generator.
+# Every example is executed against the real database in tests/test_examples.py, so none can be wrong or stale.
+# Dates are written explicitly because the application resolves relative dates before generation.
+
+- q: "Show me the top 5 products by revenue in October 2026"
+  sql: |
+    SELECT product_name, SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    WHERE date BETWEEN '2026-10-01' AND '2026-10-31'
+    GROUP BY product_name
+    ORDER BY total_revenue DESC
+    LIMIT 5
+
+- q: "What is the total revenue in September 2026?"
+  sql: |
+    SELECT SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    WHERE date BETWEEN '2026-09-01' AND '2026-09-30'
+
+- q: "Compare monthly revenue for 2026"
+  sql: |
+    SELECT DATE_TRUNC('month', date)::date AS month, SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    WHERE date BETWEEN '2026-01-01' AND '2026-12-31'
+    GROUP BY 1
+    ORDER BY 1
+
+- q: "Which products are below their reorder point?"
+  sql: |
+    SELECT product_name, current_stock, reorder_point
+    FROM v_inventory_status
+    WHERE below_reorder_point
+    ORDER BY current_stock - reorder_point
+
+- q: "Which batches will expire within the next 7 days?"
+  sql: |
+    SELECT batch_id, product_name, quantity_remaining, expiry_date, days_to_expiry
+    FROM v_batch_expiry
+    WHERE days_to_expiry <= 7
+    ORDER BY expiry_date, product_name
+
+- q: "Revenue by category in 2026"
+  sql: |
+    SELECT category, SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    WHERE date BETWEEN '2026-01-01' AND '2026-12-31'
+    GROUP BY category
+    ORDER BY total_revenue DESC
+
+- q: "Which supplier supplies the most products?"
+  sql: |
+    SELECT s.supplier_name, COUNT(*) AS product_count
+    FROM products p
+    JOIN suppliers s ON s.supplier_id = p.supplier_id
+    GROUP BY s.supplier_name
+    ORDER BY product_count DESC
+
+- q: "Which products are at risk of running out of stock before a new order can arrive?"
+  sql: |
+    SELECT product_name, current_stock, days_of_cover, supplier_lead_time_days
+    FROM v_inventory_status
+    WHERE stockout_risk
+    ORDER BY days_of_cover
+
+- q: "Show the daily sales of Amul Toned Milk in October 2026"
+  sql: |
+    SELECT date, quantity_sold, revenue
+    FROM v_sales_enriched
+    WHERE product_name ILIKE '%Amul Toned Milk%' AND date BETWEEN '2026-10-01' AND '2026-10-31'
+    ORDER BY date
+
+- q: "What was the profit by category in the last 3 months?"
+  sql: |
+    SELECT category, SUM(profit) AS total_profit
+    FROM v_sales_enriched
+    WHERE date BETWEEN '2026-08-01' AND '2026-10-31'
+    GROUP BY category
+    ORDER BY total_profit DESC
+
+- q: "Which product sells the most units on weekends?"
+  sql: |
+    SELECT product_name, SUM(quantity_sold) AS units_sold
+    FROM v_sales_enriched
+    WHERE is_weekend
+    GROUP BY product_name
+    ORDER BY units_sold DESC
+    LIMIT 1
+
+- q: "What is the average daily units sold per category?"
+  sql: |
+    SELECT category, ROUND(SUM(quantity_sold)::numeric / COUNT(DISTINCT date), 2) AS avg_units_per_day
+    FROM v_sales_enriched
+    GROUP BY category
+    ORDER BY avg_units_per_day DESC
+
+- q: "How much stock value will expire in the next 14 days?"
+  sql: |
+    SELECT SUM(value_at_risk) AS value_expiring
+    FROM v_batch_expiry
+    WHERE days_to_expiry <= 14
+
+- q: "Compare revenue on festival days versus normal days"
+  sql: |
+    SELECT COALESCE(festival, 'Normal day') AS day_type, SUM(revenue) AS total_revenue, COUNT(DISTINCT date) AS days
+    FROM v_sales_enriched
+    GROUP BY 1
+    ORDER BY total_revenue DESC
+
+- q: "Do promotions increase units sold?"
+  sql: |
+    SELECT promotion_applied, ROUND(AVG(quantity_sold), 2) AS avg_units_per_product_day, COUNT(*) AS product_days
+    FROM v_sales_enriched
+    GROUP BY promotion_applied
+
+- q: "Which supplier has the shortest lead time?"
+  sql: |
+    SELECT supplier_name, average_lead_time_days
+    FROM suppliers
+    ORDER BY average_lead_time_days
+    LIMIT 1
+
+- q: "What is the total value of stock by category?"
+  sql: |
+    SELECT category, SUM(stock_value) AS total_stock_value
+    FROM v_inventory_status
+    GROUP BY category
+    ORDER BY total_stock_value DESC
+
+- q: "Which products have less than 5 days of stock left?"
+  sql: |
+    SELECT product_name, current_stock, days_of_cover
+    FROM v_inventory_status
+    WHERE days_of_cover < 5
+    ORDER BY days_of_cover
+
+- q: "Show month over month revenue growth"
+  sql: |
+    WITH m AS (
+      SELECT DATE_TRUNC('month', date)::date AS month, SUM(revenue) AS revenue
+      FROM v_sales_enriched
+      GROUP BY 1
+    )
+    SELECT month, revenue,
+           ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / NULLIF(LAG(revenue) OVER (ORDER BY month), 0), 1) AS growth_pct
+    FROM m
+    ORDER BY month
+
+- q: "How many units of Bread were sold between 1 July 2026 and 31 July 2026?"
+  sql: |
+    SELECT SUM(quantity_sold) AS units_sold
+    FROM v_sales_enriched
+    WHERE product_name ILIKE '%Bread%' AND date BETWEEN '2026-07-01' AND '2026-07-31'
+
+- q: "How many products are in each category?"
+  sql: |
+    SELECT category, COUNT(*) AS product_count
+    FROM products
+    GROUP BY category
+    ORDER BY product_count DESC
+
+- q: "Which products have the lowest profit margin?"
+  sql: |
+    SELECT product_name, selling_price, unit_cost,
+           ROUND((selling_price - unit_cost) * 100.0 / selling_price, 1) AS margin_pct
+    FROM products
+    ORDER BY margin_pct
+    LIMIT 5
+
+- q: "Which supplier generated the most revenue?"
+  sql: |
+    SELECT supplier_name, SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    GROUP BY supplier_name
+    ORDER BY total_revenue DESC
+    LIMIT 1
+
+- q: "Which Dairy products are below reorder point and also have a batch expiring within 7 days?"
+  sql: |
+    SELECT DISTINCT i.product_name, i.current_stock, i.reorder_point, b.expiry_date, b.days_to_expiry
+    FROM v_inventory_status i
+    JOIN v_batch_expiry b ON b.product_id = i.product_id
+    WHERE i.category = 'Dairy' AND i.below_reorder_point AND b.days_to_expiry <= 7
+    ORDER BY b.days_to_expiry
+
+- q: "What were total sales of each product on Diwali?"
+  sql: |
+    SELECT product_name, SUM(quantity_sold) AS units_sold, SUM(revenue) AS total_revenue
+    FROM v_sales_enriched
+    WHERE festival = 'Diwali'
+    GROUP BY product_name
+    ORDER BY total_revenue DESC

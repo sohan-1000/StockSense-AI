@@ -1,0 +1,40 @@
+# Multilingual evaluation: Hindi (hi) and Telugu (te) versions of questions from eval_cases.yaml.
+# `like: <id>` reuses that case's hand-written reference SQL, so a non-English question must return the SAME data as
+# its English twin. `lang` also checks that the final reply is written in that language's script.
+# Run: python tests/run_eval.py --file eval_multilingual.yaml
+
+# ---- Hindi
+- {id: HI01, like: S01, lang: hi, cat: sales, expect: sql, q: "अक्टूबर 2026 में कुल राजस्व कितना है?"}
+- {id: HI02, like: S04, lang: hi, cat: sales, expect: sql, q: "2026 में किस श्रेणी का राजस्व सबसे ज़्यादा रहा?"}
+- {id: HI03, like: S07, lang: hi, cat: dates, expect: sql, q: "पिछले महीने का राजस्व कितना था?"}
+- {id: HI04, like: I01, lang: hi, cat: inventory, expect: sql, q: "कौन से उत्पाद अपने री-ऑर्डर पॉइंट से नीचे हैं?"}
+- {id: HI05, like: B01, lang: hi, cat: expiry, expect: sql, q: "अगले 7 दिनों में कौन से बैच एक्सपायर हो रहे हैं?"}
+- {id: HI06, like: P09, lang: hi, cat: product, expect: sql, q: "कुल कितने उत्पाद हैं?"}
+- {id: HI07, like: U03, lang: hi, cat: supplier, expect: sql, q: "2026 में किस सप्लायर से सबसे ज़्यादा राजस्व आया?"}
+- {id: HI08, like: D03, lang: hi, cat: dates, expect: sql, q: "2025 का महीने-वार राजस्व दिखाओ"}
+- {id: HI09, like: S05, lang: hi, cat: sales, expect: sql, q: "2026 में यूनिट बिक्री के हिसाब से टॉप 3 उत्पाद कौन से हैं?"}
+- {id: HI10, like: I04, lang: hi, cat: inventory, expect: sql, q: "मौजूदा स्टॉक की कुल लागत कितनी है?"}
+- {id: HI11, like: S10, lang: hi, cat: sales, expect: sql, q: "सप्ताह के किस दिन सबसे ज़्यादा यूनिट बिकती हैं?"}
+- {id: HI12, lang: hi, cat: dates, expect: sql, q: "अक्टूबर में राजस्व के हिसाब से टॉप 5 प्रोडक्ट्स दिखाओ", ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold*s.selling_price) r FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-10-01' AND '2026-10-31' GROUP BY 1 ORDER BY r DESC LIMIT 5"}
+- {id: HI13, lang: hi, cat: unsupported, expect: unsupported, q: "किस ग्राहक ने सबसे ज़्यादा सामान खरीदा?"}
+- {id: HI14, lang: hi, cat: rag_route, expect: rag, q: "भारत की राजधानी क्या है?"}
+- {id: HI15, lang: hi, cat: rag_route, expect: rag, q: "दुकान के खुलने का समय क्या है?"}
+
+# ---- Telugu
+- {id: TE01, like: S01, lang: te, cat: sales, expect: sql, q: "అక్టోబర్ 2026 లో మొత్తం ఆదాయం ఎంత?"}
+- {id: TE02, like: S04, lang: te, cat: sales, expect: sql, q: "2026 లో ఏ కేటగిరీ అత్యధిక ఆదాయం సంపాదించింది?"}
+- {id: TE03, like: S07, lang: te, cat: dates, expect: sql, q: "గత నెల ఆదాయం ఎంత?"}
+- {id: TE04, like: I01, lang: te, cat: inventory, expect: sql, q: "ఏ ఉత్పత్తులు రీఆర్డర్ పాయింట్ కంటే తక్కువగా ఉన్నాయి?"}
+- {id: TE05, like: B01, lang: te, cat: expiry, expect: sql, q: "రాబోయే 7 రోజుల్లో ఏ బ్యాచ్‌లు గడువు ముగుస్తున్నాయి?"}
+- {id: TE06, like: P09, lang: te, cat: product, expect: sql, q: "మొత్తం ఎన్ని ఉత్పత్తులు ఉన్నాయి?"}
+- {id: TE07, like: U03, lang: te, cat: supplier, expect: sql, q: "2026 లో ఏ సరఫరాదారు ద్వారా అత్యధిక ఆదాయం వచ్చింది?"}
+- {id: TE08, like: D03, lang: te, cat: dates, expect: sql, q: "2025 నెలవారీ ఆదాయం చూపించు"}
+- {id: TE09, like: S05, lang: te, cat: sales, expect: sql, q: "2026 లో యూనిట్ల అమ్మకాల ప్రకారం టాప్ 3 ఉత్పత్తులు ఏవి?"}
+- {id: TE10, like: I04, lang: te, cat: inventory, expect: sql, q: "ప్రస్తుత స్టాక్ మొత్తం విలువ (కొనుగోలు ధర ప్రకారం) ఎంత?"}
+- {id: TE11, like: S10, lang: te, cat: sales, expect: sql, q: "వారంలో ఏ రోజు అత్యధిక యూనిట్లు అమ్ముడవుతాయి?"}
+- {id: TE12, lang: te, cat: dates, expect: sql, q: "అక్టోబర్‌లో ఆదాయం ప్రకారం టాప్ 5 ఉత్పత్తులు చూపించు", ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold*s.selling_price) r FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-10-01' AND '2026-10-31' GROUP BY 1 ORDER BY r DESC LIMIT 5"}
+- {id: TE13, lang: te, cat: unsupported, expect: unsupported, q: "ఏ కస్టమర్ ఎక్కువ వస్తువులు కొన్నాడు?"}
+- {id: TE14, lang: te, cat: rag_route, expect: rag, q: "భారతదేశ రాజధాని ఏది?"}
+- {id: TE15, lang: te, cat: rag_route, expect: rag, q: "దుకాణం ఎప్పుడు తెరుస్తారు?"}
