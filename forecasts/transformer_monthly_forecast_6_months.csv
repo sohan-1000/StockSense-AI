@@ -1,0 +1,181 @@
+month,product_id,product_name,forecast_quantity
+2026-11,P001,Amul Toned Milk,27.07
+2026-11,P002,Curd 500g,28.0
+2026-11,P003,Paneer 200g,20.65
+2026-11,P004,Butter 100g,17.12
+2026-11,P005,Bread,35.16
+2026-11,P006,Brown Bread,22.99
+2026-11,P007,Eggs 6-pack,28.08
+2026-11,P008,Basmati Rice 1kg,19.18
+2026-11,P009,Wheat Flour 1kg,23.1
+2026-11,P010,Toor Dal 1kg,21.92
+2026-11,P011,Sugar 1kg,20.3
+2026-11,P012,Sunflower Oil 1L,27.69
+2026-11,P013,Salt 1kg,17.44
+2026-11,P014,Tea 250g,19.84
+2026-11,P015,Coffee 100g,13.9
+2026-11,P016,Cola 750ml,54.94
+2026-11,P017,Orange Juice 1L,21.08
+2026-11,P018,Bottled Water 1L,42.98
+2026-11,P019,Potato Chips,40.43
+2026-11,P020,Biscuits,36.27
+2026-11,P021,Chocolate Bar,24.32
+2026-11,P022,Instant Noodles,42.68
+2026-11,P023,Tomato Ketchup,16.12
+2026-11,P024,Toothpaste,17.5
+2026-11,P025,Bath Soap,25.8
+2026-11,P026,Shampoo 180ml,15.4
+2026-11,P027,Detergent 1kg,19.06
+2026-11,P028,Dishwash Liquid,19.98
+2026-11,P029,Apples 1kg,21.53
+2026-11,P030,Tomatoes 1kg,22.75
+2026-12,P001,Amul Toned Milk,28.0
+2026-12,P002,Curd 500g,24.5
+2026-12,P003,Paneer 200g,18.9
+2026-12,P004,Butter 100g,16.39
+2026-12,P005,Bread,28.68
+2026-12,P006,Brown Bread,20.49
+2026-12,P007,Eggs 6-pack,23.8
+2026-12,P008,Basmati Rice 1kg,17.88
+2026-12,P009,Wheat Flour 1kg,28.0
+2026-12,P010,Toor Dal 1kg,16.86
+2026-12,P011,Sugar 1kg,22.4
+2026-12,P012,Sunflower Oil 1L,25.2
+2026-12,P013,Salt 1kg,20.3
+2026-12,P014,Tea 250g,16.9
+2026-12,P015,Coffee 100g,14.31
+2026-12,P016,Cola 750ml,43.1
+2026-12,P017,Orange Juice 1L,19.12
+2026-12,P018,Bottled Water 1L,35.46
+2026-12,P019,Potato Chips,33.6
+2026-12,P020,Biscuits,29.4
+2026-12,P021,Chocolate Bar,19.81
+2026-12,P022,Instant Noodles,37.8
+2026-12,P023,Tomato Ketchup,15.94
+2026-12,P024,Toothpaste,15.12
+2026-12,P025,Bath Soap,26.6
+2026-12,P026,Shampoo 180ml,13.38
+2026-12,P027,Detergent 1kg,23.8
+2026-12,P028,Dishwash Liquid,18.54
+2026-12,P029,Apples 1kg,24.5
+2026-12,P030,Tomatoes 1kg,29.4
+2027-01,P001,Amul Toned Milk,24.5
+2027-01,P002,Curd 500g,24.5
+2027-01,P003,Paneer 200g,19.6
+2027-01,P004,Butter 100g,16.8
+2027-01,P005,Bread,34.3
+2027-01,P006,Brown Bread,20.57
+2027-01,P007,Eggs 6-pack,23.1
+2027-01,P008,Basmati Rice 1kg,24.5
+2027-01,P009,Wheat Flour 1kg,20.91
+2027-01,P010,Toor Dal 1kg,19.6
+2027-01,P011,Sugar 1kg,17.97
+2027-01,P012,Sunflower Oil 1L,21.93
+2027-01,P013,Salt 1kg,16.94
+2027-01,P014,Tea 250g,16.91
+2027-01,P015,Coffee 100g,14.5
+2027-01,P016,Cola 750ml,39.7
+2027-01,P017,Orange Juice 1L,23.8
+2027-01,P018,Bottled Water 1L,42.7
+2027-01,P019,Potato Chips,30.1
+2027-01,P020,Biscuits,26.6
+2027-01,P021,Chocolate Bar,20.3
+2027-01,P022,Instant Noodles,39.2
+2027-01,P023,Tomato Ketchup,16.06
+2027-01,P024,Toothpaste,16.8
+2027-01,P025,Bath Soap,21.0
+2027-01,P026,Shampoo 180ml,14.0
+2027-01,P027,Detergent 1kg,18.05
+2027-01,P028,Dishwash Liquid,22.4
+2027-01,P029,Apples 1kg,22.4
+2027-01,P030,Tomatoes 1kg,34.3
+2027-02,P001,Amul Toned Milk,24.5
+2027-02,P002,Curd 500g,21.12
+2027-02,P003,Paneer 200g,25.2
+2027-02,P004,Butter 100g,17.5
+2027-02,P005,Bread,27.3
+2027-02,P006,Brown Bread,21.0
+2027-02,P007,Eggs 6-pack,19.6
+2027-02,P008,Basmati Rice 1kg,18.2
+2027-02,P009,Wheat Flour 1kg,21.7
+2027-02,P010,Toor Dal 1kg,14.6
+2027-02,P011,Sugar 1kg,15.98
+2027-02,P012,Sunflower Oil 1L,19.22
+2027-02,P013,Salt 1kg,15.04
+2027-02,P014,Tea 250g,15.4
+2027-02,P015,Coffee 100g,12.86
+2027-02,P016,Cola 750ml,33.6
+2027-02,P017,Orange Juice 1L,17.5
+2027-02,P018,Bottled Water 1L,35.0
+2027-02,P019,Potato Chips,30.1
+2027-02,P020,Biscuits,20.3
+2027-02,P021,Chocolate Bar,17.51
+2027-02,P022,Instant Noodles,30.1
+2027-02,P023,Tomato Ketchup,14.7
+2027-02,P024,Toothpaste,13.42
+2027-02,P025,Bath Soap,24.5
+2027-02,P026,Shampoo 180ml,14.7
+2027-02,P027,Detergent 1kg,16.04
+2027-02,P028,Dishwash Liquid,16.62
+2027-02,P029,Apples 1kg,15.39
+2027-02,P030,Tomatoes 1kg,26.6
+2027-03,P001,Amul Toned Milk,27.3
+2027-03,P002,Curd 500g,25.9
+2027-03,P003,Paneer 200g,20.3
+2027-03,P004,Butter 100g,16.13
+2027-03,P005,Bread,26.6
+2027-03,P006,Brown Bread,21.0
+2027-03,P007,Eggs 6-pack,21.0
+2027-03,P008,Basmati Rice 1kg,19.6
+2027-03,P009,Wheat Flour 1kg,20.49
+2027-03,P010,Toor Dal 1kg,16.8
+2027-03,P011,Sugar 1kg,19.6
+2027-03,P012,Sunflower Oil 1L,25.9
+2027-03,P013,Salt 1kg,16.54
+2027-03,P014,Tea 250g,30.8
+2027-03,P015,Coffee 100g,18.9
+2027-03,P016,Cola 750ml,39.9
+2027-03,P017,Orange Juice 1L,28.0
+2027-03,P018,Bottled Water 1L,52.5
+2027-03,P019,Potato Chips,26.65
+2027-03,P020,Biscuits,32.9
+2027-03,P021,Chocolate Bar,23.1
+2027-03,P022,Instant Noodles,33.6
+2027-03,P023,Tomato Ketchup,18.2
+2027-03,P024,Toothpaste,14.76
+2027-03,P025,Bath Soap,23.1
+2027-03,P026,Shampoo 180ml,13.16
+2027-03,P027,Detergent 1kg,21.7
+2027-03,P028,Dishwash Liquid,18.3
+2027-03,P029,Apples 1kg,23.1
+2027-03,P030,Tomatoes 1kg,24.5
+2027-04,P001,Amul Toned Milk,23.1
+2027-04,P002,Curd 500g,22.46
+2027-04,P003,Paneer 200g,18.9
+2027-04,P004,Butter 100g,15.64
+2027-04,P005,Bread,27.3
+2027-04,P006,Brown Bread,20.3
+2027-04,P007,Eggs 6-pack,24.5
+2027-04,P008,Basmati Rice 1kg,18.2
+2027-04,P009,Wheat Flour 1kg,30.8
+2027-04,P010,Toor Dal 1kg,18.9
+2027-04,P011,Sugar 1kg,21.0
+2027-04,P012,Sunflower Oil 1L,28.0
+2027-04,P013,Salt 1kg,16.05
+2027-04,P014,Tea 250g,21.7
+2027-04,P015,Coffee 100g,16.8
+2027-04,P016,Cola 750ml,37.8
+2027-04,P017,Orange Juice 1L,28.0
+2027-04,P018,Bottled Water 1L,49.7
+2027-04,P019,Potato Chips,37.1
+2027-04,P020,Biscuits,30.1
+2027-04,P021,Chocolate Bar,24.5
+2027-04,P022,Instant Noodles,36.4
+2027-04,P023,Tomato Ketchup,17.5
+2027-04,P024,Toothpaste,15.4
+2027-04,P025,Bath Soap,20.3
+2027-04,P026,Shampoo 180ml,12.77
+2027-04,P027,Detergent 1kg,19.6
+2027-04,P028,Dishwash Liquid,17.76
+2027-04,P029,Apples 1kg,21.7
+2027-04,P030,Tomatoes 1kg,25.9

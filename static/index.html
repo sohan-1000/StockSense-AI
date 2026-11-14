@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Demand Forecast</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f8fc; color: #18212f; margin: 0; }
+    main { max-width: 980px; margin: 48px auto; padding: 0 20px; } h1 { margin-bottom: 8px; }
+    .controls, .summary { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 24px 0; }
+    select, button { font: inherit; padding: 10px 12px; border: 1px solid #c9d1df; border-radius: 6px; } button { background: #175cd3; color: white; border: 0; cursor: pointer; }
+    .summary, .chart { background: white; border-radius: 8px; padding: 16px; } .chart { margin-bottom: 24px; } .chart h2 { font-size: 18px; margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; background: white; } th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e9f0; } th { background: #eef3ff; }
+    .muted { color: #627086; } .error { color: #b42318; } #chart { width: 100%; height: auto; overflow: visible; }
+    .grid { stroke: #e5e9f0; stroke-width: 1; } .axis { fill: #627086; font-size: 12px; } .line { fill: none; stroke: #175cd3; stroke-width: 3; } .point, .bar { fill: #175cd3; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Product Demand Forecast</h1>
+    <p class="muted">Transformer-based six-month monthly demand forecast.</p>
+    <div class="controls">
+      <label for="product">Product</label><select id="product"><option value="all">All products</option></select>
+      <label for="month">Month</label><select id="month"><option value="all">All 6 months</option></select>
+      <button id="load">Get forecast</button>
+    </div>
+    <div id="status" class="muted">Load a forecast to begin.</div>
+    <div id="summary" class="summary" hidden></div>
+    <section id="chart-panel" class="chart" hidden><h2>Monthly forecast</h2><svg id="chart" viewBox="0 0 820 320" role="img" aria-label="Monthly demand forecast chart"></svg></section>
+    <table id="results" hidden><thead><tr><th>Month</th><th>Product</th><th>Forecast quantity</th></tr></thead><tbody></tbody></table>
+    <section id="product-summary-panel" class="chart" hidden><h2>Product-wise six-month forecast</h2><table id="product-summary"><thead></thead><tbody></tbody></table></section>
+  </main>
+  <script>
+    const productSelect = document.getElementById('product');
+    const monthSelect = document.getElementById('month');
+    const status = document.getElementById('status');
+    const summary = document.getElementById('summary');
+    const table = document.getElementById('results');
+    const body = table.querySelector('tbody');
+    const productSummaryPanel = document.getElementById('product-summary-panel');
+    const productSummary = document.getElementById('product-summary');
+    let allForecasts = [];
+    function displayQuantity(value) { return Math.ceil(Number(value)); }
+    function filteredForecasts() { return allForecasts.filter(row => (productSelect.value === 'all' || row.product_id === productSelect.value) && (monthSelect.value === 'all' || row.month === monthSelect.value)); }
+    function renderChart(rows) {
+      const panel = document.getElementById('chart-panel'); const chart = document.getElementById('chart'); const monthly = {};
+      rows.forEach(row => monthly[row.month] = (monthly[row.month] || 0) + Number(row.forecast_quantity)); const points = Object.entries(monthly).sort();
+      if (!points.length) { panel.hidden = true; return; } panel.hidden = false;
+      const left = 52, top = 20, width = 820, height = 320, bottom = 46, plotWidth = width - left - 22, plotHeight = height - top - bottom;
+      const max = Math.max(...points.map(([, value]) => value), 1) * 1.15; const x = index => points.length === 1 ? left + plotWidth / 2 : left + index * plotWidth / (points.length - 1); const y = value => top + plotHeight - value / max * plotHeight;
+      const grid = [0, max / 2, max].map(value => `<line class="grid" x1="${left}" x2="${width - 22}" y1="${y(value)}" y2="${y(value)}"/><text class="axis" x="${left - 8}" y="${y(value) + 4}" text-anchor="end">${displayQuantity(value)}</text>`).join(''); const axisTitles = `<text class="axis" x="${left + plotWidth / 2}" y="${height - 2}" text-anchor="middle">Month</text><text class="axis" transform="translate(14 ${top + plotHeight / 2}) rotate(-90)" text-anchor="middle">Forecast quantity (units)</text>`;
+      const labels = points.map(([month], index) => `<text class="axis" x="${x(index)}" y="${height - 18}" text-anchor="middle">${month}</text>`).join('');
+      if (points.length === 1) { const value = points[0][1], barWidth = 90; chart.innerHTML = `${grid}<rect class="bar" x="${x(0) - barWidth / 2}" y="${y(value)}" width="${barWidth}" height="${top + plotHeight - y(value)}"/><text class="axis" x="${x(0)}" y="${y(value) - 8}" text-anchor="middle">${displayQuantity(value)}</text>${labels}${axisTitles}`; return; }
+      const path = points.map(([, value], index) => `${index ? 'L' : 'M'} ${x(index)} ${y(value)}`).join(' '); const dots = points.map(([, value], index) => `<circle class="point" cx="${x(index)}" cy="${y(value)}" r="4"><title>${points[index][0]}: ${displayQuantity(value)} units</title></circle>`).join(''); chart.innerHTML = `${grid}<path class="line" d="${path}"/>${dots}${labels}${axisTitles}`;
+    }
+    function renderProductSummary() { const months = [...new Set(allForecasts.map(row => row.month))].sort(); const selectedProduct = productSelect.value; const rows = allForecasts.filter(row => selectedProduct === 'all' || row.product_id === selectedProduct); const products = [...new Map(rows.map(row => [row.product_id, row.product_name])).entries()].sort(); productSummary.querySelector('thead').innerHTML = `<tr><th>Product</th>${months.map(month => `<th>${month}</th>`).join('')}</tr>`; productSummary.querySelector('tbody').innerHTML = products.map(([id, name]) => `<tr><td>${id} - ${name}</td>${months.map(month => { const row = rows.find(item => item.product_id === id && item.month === month); return `<td>${row ? displayQuantity(row.forecast_quantity) : '-'}</td>`; }).join('')}</tr>`).join(''); productSummaryPanel.hidden = false; }
+    function render() { const rows = filteredForecasts(); body.innerHTML = rows.map(row => `<tr><td>${row.month}</td><td>${row.product_id} - ${row.product_name}</td><td>${displayQuantity(row.forecast_quantity)}</td></tr>`).join(''); const total = rows.reduce((sum, row) => sum + Number(row.forecast_quantity), 0); summary.textContent = `${rows.length} product-month forecasts. Total predicted demand: ${displayQuantity(total)} units`; summary.hidden = false; table.hidden = false; renderChart(rows); renderProductSummary(); }
+    function addOptions() { if (productSelect.options.length === 1) [...new Set(allForecasts.map(row => `${row.product_id}|${row.product_name}`))].sort().forEach(value => { const [id, name] = value.split('|'); productSelect.add(new Option(`${id} - ${name}`, id)); }); if (monthSelect.options.length === 1) [...new Set(allForecasts.map(row => row.month))].sort().forEach(month => monthSelect.add(new Option(month, month))); }
+    async function loadForecast() { status.className = 'muted'; status.textContent = 'Loading forecast...'; try { const response = await fetch('/api/forecast?months=6'); if (!response.ok) throw new Error('Forecast request failed'); const data = await response.json(); allForecasts = data.forecasts; addOptions(); render(); status.textContent = `${data.model}: ${data.forecast_start} to ${data.forecast_end}`; } catch (error) { status.className = 'error'; status.textContent = error.message; } }
+    document.getElementById('load').addEventListener('click', loadForecast); productSelect.addEventListener('change', render); monthSelect.addEventListener('change', render);
+  </script>
+</body>
+</html>
