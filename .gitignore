@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets: real values live only in local .env files
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+
+# Redundant copy of StockSense-AI_portable/ (already committed as a folder)
+StockSense-AI_portable.zip

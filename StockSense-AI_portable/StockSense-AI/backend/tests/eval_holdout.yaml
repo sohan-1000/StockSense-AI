@@ -1,0 +1,54 @@
+# HELD-OUT evaluation set: written AFTER the prompt/rule tuning done on eval_cases.yaml, never used for tuning.
+# Run:  python tests/run_eval.py --file eval_holdout.yaml
+- {id: H01, cat: sales, q: "Which product earned the least revenue in 2026?", expect: sql, ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold*s.selling_price) r FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY r ASC LIMIT 1"}
+- {id: H02, cat: sales, q: "How many units of Tea 250g did we sell in August 2026?", expect: sql,
+   ref: "SELECT SUM(s.quantity_sold) FROM sales s JOIN products p USING(product_id) WHERE p.product_name='Tea 250g' AND s.date BETWEEN '2026-08-01' AND '2026-08-31'"}
+- {id: H03, cat: sales, q: "Which date had the lowest total units sold in October 2026?", expect: sql, ordered: true,
+   ref: "SELECT date, SUM(quantity_sold) u FROM sales WHERE date BETWEEN '2026-10-01' AND '2026-10-31' GROUP BY 1 ORDER BY u ASC, date LIMIT 1"}
+- {id: H04, cat: sales, q: "What was the total revenue yesterday?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date = '2026-10-30'"}
+- {id: H05, cat: sales, q: "Show total units sold by category in 2025", expect: sql,
+   ref: "SELECT p.category, SUM(s.quantity_sold) FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2025-01-01' AND '2025-12-31' GROUP BY 1"}
+- {id: H06, cat: sales, q: "How much profit did Dairy make in September 2026?", expect: sql,
+   ref: "SELECT SUM(s.quantity_sold*(s.selling_price-p.unit_cost)) FROM sales s JOIN products p USING(product_id) WHERE p.category='Dairy' AND s.date BETWEEN '2026-09-01' AND '2026-09-30'"}
+- {id: H07, cat: product, q: "Which products cost more than 100 rupees to buy from the supplier?", expect: sql,
+   ref: "SELECT product_name, unit_cost FROM products WHERE unit_cost > 100"}
+- {id: H08, cat: product, q: "How many Beverages products do we stock?", expect: sql,
+   ref: "SELECT COUNT(*) FROM products WHERE category='Beverages'"}
+- {id: H09, cat: product, q: "What is the cheapest product in the Snacks category?", expect: sql, ordered: true,
+   ref: "SELECT product_name, selling_price FROM products WHERE category='Snacks' ORDER BY selling_price, product_name LIMIT 1"}
+- {id: H10, cat: inventory, q: "How many units of Cola 750ml are in stock?", expect: sql,
+   ref: "SELECT i.current_stock FROM inventory i JOIN products p USING(product_id) WHERE p.product_name='Cola 750ml'"}
+- {id: H11, cat: inventory, q: "Which Dairy products have less than 10 units in stock?", expect: sql,
+   ref: "SELECT p.product_name, i.current_stock FROM inventory i JOIN products p USING(product_id) WHERE p.category='Dairy' AND i.current_stock < 10"}
+- {id: H12, cat: inventory, q: "What is the total number of units in stock across all products?", expect: sql,
+   ref: "SELECT SUM(current_stock) FROM inventory"}
+- {id: H13, cat: inventory, q: "Which products sell more than 1.5 units per day on average over the last 30 days?", expect: sql,
+   ref: "SELECT p.product_name, i.avg_daily_sales_last_30d FROM inventory i JOIN products p USING(product_id) WHERE i.avg_daily_sales_last_30d > 1.5"}
+- {id: H14, cat: expiry, q: "How many units will expire in the next 5 days?", expect: sql,
+   ref: "SELECT SUM(quantity_remaining) FROM batches WHERE expiry_date <= DATE '2026-10-31' + 5"}
+- {id: H15, cat: expiry, q: "Which Bakery products have batches expiring within 3 days?", expect: sql,
+   ref: "SELECT DISTINCT p.product_name FROM batches b JOIN products p USING(product_id) WHERE p.category='Bakery' AND b.expiry_date <= DATE '2026-10-31' + 3"}
+- {id: H16, cat: expiry, q: "What is the latest expiry date among all batches?", expect: sql,
+   ref: "SELECT MAX(expiry_date) FROM batches"}
+- {id: H17, cat: supplier, q: "Which city has the most suppliers?", expect: sql, ordered: true,
+   ref: "SELECT city, COUNT(*) c FROM suppliers GROUP BY 1 ORDER BY c DESC LIMIT 1"}
+- {id: H18, cat: supplier, q: "What is the minimum order value of Metro Foods Supply?", expect: sql,
+   ref: "SELECT minimum_order_value FROM suppliers WHERE supplier_name='Metro Foods Supply'"}
+- {id: H19, cat: supplier, q: "Which supplier delivers the slowest on average?", expect: sql, ordered: true,
+   ref: "SELECT supplier_name, average_lead_time_days FROM suppliers ORDER BY average_lead_time_days DESC LIMIT 1"}
+- {id: H20, cat: dates, q: "Compare Q1 and Q2 revenue of 2026", expect: sql,
+   ref: "SELECT CASE WHEN date <= '2026-03-31' THEN 'Q1' ELSE 'Q2' END, SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-01-01' AND '2026-06-30' GROUP BY 1"}
+- {id: H21, cat: dates, q: "What were total sales on Independence Day?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE festival = 'Independence Day'"}
+- {id: H22, cat: multi, q: "Which Staples products sold more than 30 units in July 2026?", expect: sql,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold) FROM sales s JOIN products p USING(product_id) WHERE p.category='Staples' AND s.date BETWEEN '2026-07-01' AND '2026-07-31' GROUP BY 1 HAVING SUM(s.quantity_sold) > 30"}
+- {id: H23, cat: multi, q: "Which products have stock below their reorder point and are supplied by Metro Foods Supply?", expect: sql,
+   ref: "SELECT p.product_name FROM inventory i JOIN products p USING(product_id) JOIN suppliers su USING(supplier_id) WHERE i.current_stock <= i.reorder_point AND su.supplier_name='Metro Foods Supply'"}
+- {id: H24, cat: edge, q: "Show me the sales of Dragon Fruit Juice", expect: sql,
+   ref: "SELECT s.date FROM sales s JOIN products p USING(product_id) WHERE p.product_name ILIKE '%Dragon Fruit Juice%'"}
+- {id: H25, cat: unsupported, q: "Which salesperson sold the most last month?", expect: unsupported}
+- {id: H26, cat: unsupported, q: "What is my customer satisfaction score?", expect: unsupported}
+- {id: H27, cat: rag_route, q: "Who is the prime minister of India?", expect: rag}
+- {id: H28, cat: rag_route, q: "What should I do to attract more customers to my shop?", expect: rag}

@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+psycopg2-binary
+pgserver        # embedded PostgreSQL 16 + pgvector (used when DATABASE_URL is not set)
+sqlglot
+pydantic
+pyyaml
+httpx
+pypdf
+python-docx
+fastembed       # local ONNX embeddings (Sarvam has no embeddings API)
+pytest

@@ -1,0 +1,168 @@
+# Evaluation set. Reference SQL is hand-written against the RAW tables (not the views) so it independently
+# verifies both the LLM output and the view definitions. Data ends 2026-10-31.
+# fields: id, cat, q, expect (sql|unsupported|rag), ref (reference SQL), ordered (row order matters)
+
+# ------------------------------------------------------------------ sales analytics
+- {id: S01, cat: sales, q: "What is the total revenue in October 2026?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-10-01' AND '2026-10-31'"}
+- {id: S02, cat: sales, q: "How many units were sold in September 2026?", expect: sql,
+   ref: "SELECT SUM(quantity_sold) FROM sales WHERE date BETWEEN '2026-09-01' AND '2026-09-30'"}
+- {id: S03, cat: sales, q: "What was the total revenue in 2025?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2025-01-01' AND '2025-12-31'"}
+- {id: S04, cat: sales, q: "Which category had the highest revenue in 2026?", expect: sql, ordered: true,
+   ref: "SELECT p.category, SUM(s.quantity_sold*s.selling_price) r FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY r DESC LIMIT 1"}
+- {id: S05, cat: sales, q: "Top 3 products by units sold in 2026", expect: sql, ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold) u FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY u DESC LIMIT 3"}
+- {id: S06, cat: sales, q: "What was the total profit in October 2026?", expect: sql,
+   ref: "SELECT SUM(s.quantity_sold*(s.selling_price-p.unit_cost)) FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-10-01' AND '2026-10-31'"}
+- {id: S07, cat: sales, q: "What was the revenue last month?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-09-01' AND '2026-09-30'"}
+- {id: S08, cat: sales, q: "What was the revenue in the last 7 days?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-10-25' AND '2026-10-31'"}
+- {id: S09, cat: sales, q: "Show the daily revenue for the last 7 days", expect: sql, ordered: true,
+   ref: "SELECT date, SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-10-25' AND '2026-10-31' GROUP BY 1 ORDER BY 1"}
+- {id: S10, cat: sales, q: "Which day of the week has the highest total units sold?", expect: sql, ordered: true,
+   ref: "SELECT c.day_of_week, SUM(s.quantity_sold) u FROM sales s JOIN calendar c USING(date) GROUP BY 1 ORDER BY u DESC LIMIT 1"}
+- {id: S11, cat: sales, q: "How many units were sold on promotion days in 2026?", expect: sql,
+   ref: "SELECT SUM(quantity_sold) FROM sales WHERE promotion_applied AND date BETWEEN '2026-01-01' AND '2026-12-31'"}
+- {id: S12, cat: sales, q: "What was the total revenue on Diwali days?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE festival = 'Diwali'"}
+- {id: S13, cat: sales, q: "Show monthly units sold for Paneer 200g in 2026", expect: sql, ordered: true,
+   ref: "SELECT DATE_TRUNC('month', s.date)::date, SUM(s.quantity_sold) FROM sales s JOIN products p USING(product_id) WHERE p.product_name='Paneer 200g' AND s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY 1"}
+- {id: S14, cat: sales, q: "Which product sold the most units in the Beverages category in 2026?", expect: sql, ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold) u FROM sales s JOIN products p USING(product_id) WHERE p.category='Beverages' AND s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY u DESC LIMIT 1"}
+- {id: S15, cat: sales, q: "How much revenue came from weekend sales in 2026?", expect: sql,
+   ref: "SELECT SUM(s.quantity_sold*s.selling_price) FROM sales s JOIN calendar c USING(date) WHERE c.is_weekend AND s.date BETWEEN '2026-01-01' AND '2026-12-31'"}
+- {id: S16, cat: sales, q: "What was the total revenue in Q3 2026?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-07-01' AND '2026-09-30'"}
+- {id: S17, cat: sales, q: "What was the highest total revenue on a single day, and on which date?", expect: sql, ordered: true,
+   ref: "SELECT date, SUM(quantity_sold*selling_price) r FROM sales GROUP BY 1 ORDER BY r DESC LIMIT 1"}
+
+# ------------------------------------------------------------------ product performance
+- {id: P01, cat: product, q: "Top 5 products by profit in 2026", expect: sql, ordered: true,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold*(s.selling_price-p.unit_cost)) pr FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY pr DESC LIMIT 5"}
+- {id: P02, cat: product, q: "What is the profit margin percentage of each product based on list price and cost?", expect: sql,
+   ref: "SELECT product_name, ROUND((selling_price-unit_cost)*100.0/selling_price,1) FROM products"}
+- {id: P03, cat: product, q: "List all Dairy products with their selling price", expect: sql,
+   ref: "SELECT product_name, selling_price FROM products WHERE category='Dairy'"}
+- {id: P04, cat: product, q: "How many products does each supplier supply?", expect: sql,
+   ref: "SELECT su.supplier_name, COUNT(*) FROM products p JOIN suppliers su USING(supplier_id) GROUP BY 1"}
+- {id: P05, cat: product, q: "Which products have a shelf life of more than one year?", expect: sql,
+   ref: "SELECT product_name, shelf_life_days FROM products WHERE shelf_life_days > 365"}
+- {id: P06, cat: product, q: "Which is the most expensive product by selling price?", expect: sql, ordered: true,
+   ref: "SELECT product_name, selling_price FROM products ORDER BY selling_price DESC LIMIT 1"}
+- {id: P07, cat: product, q: "What is the average list price of products in each category?", expect: sql,
+   ref: "SELECT category, ROUND(AVG(selling_price),2) FROM products GROUP BY 1"}
+- {id: P08, cat: product, q: "Which products have a minimum order quantity above 5?", expect: sql,
+   ref: "SELECT product_name, minimum_order_quantity FROM products WHERE minimum_order_quantity > 5"}
+- {id: P09, cat: product, q: "How many products are there in total?", expect: sql,
+   ref: "SELECT COUNT(*) FROM products"}
+- {id: P10, cat: product, q: "How many products are in each category?", expect: sql,
+   ref: "SELECT category, COUNT(*) FROM products GROUP BY 1"}
+
+# ------------------------------------------------------------------ inventory
+- {id: I01, cat: inventory, q: "Which products are below their reorder point?", expect: sql,
+   ref: "SELECT p.product_name, i.current_stock, i.reorder_point FROM inventory i JOIN products p USING(product_id) WHERE i.current_stock <= i.reorder_point"}
+- {id: I02, cat: inventory, q: "What is the current stock of Bread?", expect: sql,
+   ref: "SELECT i.current_stock FROM inventory i JOIN products p USING(product_id) WHERE p.product_name = 'Bread'"}
+- {id: I03, cat: inventory, q: "Which products have more than 20 units in stock right now?", expect: sql,
+   ref: "SELECT p.product_name, i.current_stock FROM inventory i JOIN products p USING(product_id) WHERE i.current_stock > 20"}
+- {id: I04, cat: inventory, q: "What is the total value of current stock at cost price?", expect: sql,
+   ref: "SELECT SUM(i.current_stock*p.unit_cost) FROM inventory i JOIN products p USING(product_id)"}
+- {id: I05, cat: inventory, q: "Which products have fewer than 7 days of stock cover?", expect: sql,
+   ref: "SELECT p.product_name, ROUND(i.current_stock/NULLIF(i.avg_daily_sales_last_30d,0),1) d FROM inventory i JOIN products p USING(product_id) WHERE i.current_stock/NULLIF(i.avg_daily_sales_last_30d,0) < 7"}
+- {id: I06, cat: inventory, q: "Which products may run out of stock before the supplier can deliver a new order?", expect: sql,
+   ref: "SELECT p.product_name FROM inventory i JOIN products p USING(product_id) WHERE i.current_stock/NULLIF(i.avg_daily_sales_last_30d,0) < p.supplier_lead_time_days"}
+- {id: I07, cat: inventory, q: "What is the stock value by category?", expect: sql,
+   ref: "SELECT p.category, SUM(i.current_stock*p.unit_cost) FROM inventory i JOIN products p USING(product_id) GROUP BY 1"}
+- {id: I08, cat: inventory, q: "How many products are below the reorder point in each category?", expect: sql,
+   ref: "SELECT p.category, COUNT(*) FROM inventory i JOIN products p USING(product_id) WHERE i.current_stock <= i.reorder_point GROUP BY 1"}
+- {id: I09, cat: inventory, q: "Which Staples products are below their reorder point?", expect: sql,
+   ref: "SELECT p.product_name FROM inventory i JOIN products p USING(product_id) WHERE p.category='Staples' AND i.current_stock <= i.reorder_point"}
+- {id: I10, cat: inventory, q: "How much stock of Eggs 6-pack do we have and what is its reorder point?", expect: sql,
+   ref: "SELECT i.current_stock, i.reorder_point FROM inventory i JOIN products p USING(product_id) WHERE p.product_name='Eggs 6-pack'"}
+
+# ------------------------------------------------------------------ batches / expiry
+- {id: B01, cat: expiry, q: "Which batches expire within the next 7 days?", expect: sql,
+   ref: "SELECT b.batch_id, p.product_name, b.quantity_remaining, b.expiry_date FROM batches b JOIN products p USING(product_id) WHERE b.expiry_date <= DATE '2026-10-31' + 7"}
+- {id: B02, cat: expiry, q: "How many batches expire in the next 14 days?", expect: sql,
+   ref: "SELECT COUNT(*) FROM batches WHERE expiry_date <= DATE '2026-10-31' + 14"}
+- {id: B03, cat: expiry, q: "How many units are expiring within 3 days?", expect: sql,
+   ref: "SELECT SUM(quantity_remaining) FROM batches WHERE expiry_date <= DATE '2026-10-31' + 3"}
+- {id: B04, cat: expiry, q: "What is the cost value of stock expiring within 7 days?", expect: sql,
+   ref: "SELECT SUM(b.quantity_remaining*p.unit_cost) FROM batches b JOIN products p USING(product_id) WHERE b.expiry_date <= DATE '2026-10-31' + 7"}
+- {id: B05, cat: expiry, q: "Which batches were received in October 2026?", expect: sql,
+   ref: "SELECT batch_id FROM batches WHERE received_date BETWEEN '2026-10-01' AND '2026-10-31'"}
+- {id: B06, cat: expiry, q: "List the batches of Paneer 200g with their expiry dates", expect: sql,
+   ref: "SELECT b.batch_id, b.expiry_date FROM batches b JOIN products p USING(product_id) WHERE p.product_name='Paneer 200g'"}
+- {id: B07, cat: expiry, q: "Which Dairy batches expire within 5 days?", expect: sql,
+   ref: "SELECT b.batch_id, p.product_name, b.expiry_date FROM batches b JOIN products p USING(product_id) WHERE p.category='Dairy' AND b.expiry_date <= DATE '2026-10-31' + 5"}
+- {id: B08, cat: expiry, q: "Which products have more than one batch in stock?", expect: sql,
+   ref: "SELECT p.product_name, COUNT(*) FROM batches b JOIN products p USING(product_id) GROUP BY 1 HAVING COUNT(*) > 1"}
+- {id: B09, cat: expiry, q: "Which products have a batch expiring on 1 November 2026?", expect: sql,
+   ref: "SELECT DISTINCT p.product_name FROM batches b JOIN products p USING(product_id) WHERE b.expiry_date = '2026-11-01'"}
+
+# ------------------------------------------------------------------ suppliers
+- {id: U01, cat: supplier, q: "Which supplier has the lowest minimum order value?", expect: sql, ordered: true,
+   ref: "SELECT supplier_name, minimum_order_value FROM suppliers ORDER BY minimum_order_value LIMIT 1"}
+- {id: U02, cat: supplier, q: "Which suppliers are based in Hyderabad?", expect: sql,
+   ref: "SELECT supplier_name FROM suppliers WHERE city='Hyderabad'"}
+- {id: U03, cat: supplier, q: "Which supplier generated the most revenue in 2026?", expect: sql, ordered: true,
+   ref: "SELECT su.supplier_name, SUM(s.quantity_sold*s.selling_price) r FROM sales s JOIN products p USING(product_id) JOIN suppliers su USING(supplier_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY r DESC LIMIT 1"}
+- {id: U04, cat: supplier, q: "List the products supplied by Fresh Dairy Distributors", expect: sql,
+   ref: "SELECT p.product_name FROM products p JOIN suppliers su USING(supplier_id) WHERE su.supplier_name='Fresh Dairy Distributors'"}
+- {id: U05, cat: supplier, q: "What is the average lead time across all suppliers?", expect: sql,
+   ref: "SELECT ROUND(AVG(average_lead_time_days),2) FROM suppliers"}
+- {id: U06, cat: supplier, q: "How many products below their reorder point does each supplier have?", expect: sql,
+   ref: "SELECT su.supplier_name, COUNT(*) c FROM inventory i JOIN products p USING(product_id) JOIN suppliers su USING(supplier_id) WHERE i.current_stock <= i.reorder_point GROUP BY 1"}
+
+# ------------------------------------------------------------------ date comparisons / aggregations
+- {id: D01, cat: dates, q: "Compare October 2026 revenue with October 2025", expect: sql,
+   ref: "SELECT EXTRACT(YEAR FROM date)::int, SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-10-01' AND '2026-10-31' OR date BETWEEN '2025-10-01' AND '2025-10-31' GROUP BY 1"}
+- {id: D02, cat: dates, q: "Which month in 2026 had the highest revenue?", expect: sql, ordered: true,
+   ref: "SELECT DATE_TRUNC('month', date)::date, SUM(quantity_sold*selling_price) r FROM sales WHERE date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1 ORDER BY r DESC LIMIT 1"}
+- {id: D03, cat: dates, q: "Show month-wise revenue for 2025", expect: sql, ordered: true,
+   ref: "SELECT DATE_TRUNC('month', date)::date, SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2025-01-01' AND '2025-12-31' GROUP BY 1 ORDER BY 1"}
+- {id: D04, cat: dates, q: "What was the revenue between 1 July 2026 and 15 July 2026?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-07-01' AND '2026-07-15'"}
+- {id: D05, cat: dates, q: "Compare revenue of September and October 2026", expect: sql,
+   ref: "SELECT DATE_TRUNC('month', date)::date, SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2026-09-01' AND '2026-10-31' GROUP BY 1"}
+
+# ------------------------------------------------------------------ multi-condition / joins
+- {id: M01, cat: multi, q: "Which Dairy or Bakery products sold more than 40 units in October 2026?", expect: sql,
+   ref: "SELECT p.product_name, SUM(s.quantity_sold) u FROM sales s JOIN products p USING(product_id) WHERE p.category IN ('Dairy','Bakery') AND s.date BETWEEN '2026-10-01' AND '2026-10-31' GROUP BY 1 HAVING SUM(s.quantity_sold) > 40"}
+- {id: M02, cat: multi, q: "Which products are below their reorder point and also have a batch expiring within 7 days?", expect: sql,
+   ref: "SELECT DISTINCT p.product_name FROM inventory i JOIN products p USING(product_id) JOIN batches b USING(product_id) WHERE i.current_stock <= i.reorder_point AND b.expiry_date <= DATE '2026-10-31' + 7"}
+- {id: M03, cat: multi, q: "Which products sold more than 3 units on a promotion day in October 2026?", expect: sql,
+   ref: "SELECT DISTINCT p.product_name FROM sales s JOIN products p USING(product_id) WHERE s.promotion_applied AND s.quantity_sold > 3 AND s.date BETWEEN '2026-10-01' AND '2026-10-31'"}
+- {id: M04, cat: multi, q: "What is the average daily units sold for each category in 2026?", expect: sql,
+   ref: "SELECT p.category, ROUND(SUM(s.quantity_sold)::numeric/COUNT(DISTINCT s.date),2) FROM sales s JOIN products p USING(product_id) WHERE s.date BETWEEN '2026-01-01' AND '2026-12-31' GROUP BY 1"}
+- {id: M05, cat: multi, q: "Compare the revenue on festival days with normal days", expect: sql,
+   ref: "SELECT COALESCE(festival,'Normal day'), SUM(quantity_sold*selling_price) FROM sales GROUP BY 1"}
+
+# ------------------------------------------------------------------ edge cases
+- {id: E01, cat: edge, q: "Show sales for the product named Unicorn Biscuits", expect: sql,
+   ref: "SELECT s.date FROM sales s JOIN products p USING(product_id) WHERE p.product_name ILIKE '%Unicorn Biscuits%'"}
+- {id: E02, cat: edge, q: "What was the total revenue in 2030?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2030-01-01' AND '2030-12-31'"}
+- {id: E03, cat: edge, q: "What was the revenue in November?", expect: sql,
+   ref: "SELECT SUM(quantity_sold*selling_price) FROM sales WHERE date BETWEEN '2025-11-01' AND '2025-11-30'"}
+- {id: E04, cat: edge, q: "list products", expect: sql,
+   ref: "SELECT product_name FROM products"}
+
+# ------------------------------------------------------------------ unsupported (data does not exist)
+- {id: X01, cat: unsupported, q: "Which customer bought the most items?", expect: unsupported}
+- {id: X02, cat: unsupported, q: "How many returns did we receive last month?", expect: unsupported}
+- {id: X03, cat: unsupported, q: "Show revenue by store branch", expect: unsupported}
+- {id: X04, cat: unsupported, q: "What is the total wastage cost this month?", expect: unsupported}
+- {id: X05, cat: unsupported, q: "Show my pending purchase orders", expect: unsupported}
+
+# ------------------------------------------------------------------ routed away from SQL (RAG / out of scope)
+- {id: R01, cat: rag_route, q: "What is the capital of India?", expect: rag}
+- {id: R02, cat: rag_route, q: "How can I reduce spoilage of perishable goods in my shop?", expect: rag}
+- {id: R03, cat: rag_route, q: "What are good practices for arranging products on shelves in a kirana store?", expect: rag}
+- {id: R04, cat: rag_route, q: "How is the retail market trend in India?", expect: rag}
+- {id: R05, cat: rag_route, q: "Write a poem about cats", expect: rag}
+- {id: R06, cat: rag_route, q: "What are my shop's operating hours?", expect: rag}
+- {id: R07, cat: rag_route, q: "Who is the owner of the shop?", expect: rag}
+- {id: R08, cat: rag_route, q: "What is our policy for products that are about to expire?", expect: rag}

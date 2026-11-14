@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Insights · StockSense AI</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0c10'/%3E%3Crect x='7' y='17' width='4.5' height='8' fill='%235b9dff'/%3E%3Crect x='13.75' y='11' width='4.5' height='14' fill='%235b9dff'/%3E%3Crect x='20.5' y='6' width='4.5' height='19' fill='%23e7eaef'/%3E%3C/svg%3E">
+  <script>try { var t = localStorage.getItem("ss-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {}</script>
+  <style>
+    /* StockSense console theme: shared with Bill Intake, the Assistant and Forecast. */
+    :root {
+      --bg: #0a0c10; --panel: #10141a; --panel-2: #161b23; --line: #1f2630; --line-2: #2c3542;
+      --ink: #e7eaef; --muted: #818c9b; --accent: #5b9dff; --on-accent: #06101f; --accent-soft: rgba(91, 157, 255, .12);
+      --accent-2: #f5b83d; --ok: #3ecf8e; --warn: #f5b83d; --danger: #ff6b6b;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Nirmala UI", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif;
+      --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+    :root[data-theme="light"] {
+      --bg: #f5f6f8; --panel: #ffffff; --panel-2: #eef0f4; --line: #e2e5ea; --line-2: #cdd2da;
+      --ink: #14181f; --muted: #667085; --accent: #2b6cf6; --on-accent: #ffffff; --accent-soft: rgba(43, 108, 246, .1);
+      --accent-2: #d98a06; --ok: #12805c; --warn: #a15c07; --danger: #c0332b;
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; } html[data-theme="light"] { color-scheme: light; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 13.5px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; } ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 10px; border: 2px solid var(--bg); }
+
+    .bar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+    .bar-in { max-width: 1280px; margin: 0 auto; padding: 0 20px; height: 46px; display: flex; align-items: center; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 9px; font: 700 12.5px var(--mono); letter-spacing: .14em; color: var(--ink); white-space: nowrap; }
+    .logo:hover { text-decoration: none; } .logo svg { width: 18px; height: 18px; } .logo .sub { color: var(--muted); font-weight: 500; }
+    .nav { display: flex; align-self: stretch; }
+    .nav a { display: flex; align-items: center; padding: 0 14px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+    .nav a:hover { color: var(--ink); text-decoration: none; } .nav a.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .spacer { flex: 1; }
+    .icon-btn { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); cursor: pointer; flex: none; }
+    .icon-btn:hover { color: var(--ink); border-color: var(--muted); } .icon-btn svg { width: 15px; height: 15px; }
+
+    main { max-width: 1280px; margin: 0 auto; padding: 22px 20px 64px; }
+    .head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+    .head h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+    .muted { color: var(--muted); } .small { font-size: 12px; }
+
+    .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .controls label { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; margin-right: -6px; }
+    select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px; padding: 5px 9px; min-height: 30px; min-width: 260px; }
+    select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+    button { font: 600 12px var(--font); letter-spacing: .04em; display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px; min-height: 30px; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--ink); cursor: pointer; }
+    button:hover:not(:disabled) { background: var(--panel-2); } button:disabled { color: var(--muted); cursor: wait; }
+    button.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; } button.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.12); }
+    .where { font: 12px var(--mono); color: var(--muted); margin: 0 0 18px; }
+    .where b { color: var(--ink); font-weight: 600; }
+    .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: spin .8s linear infinite; display: inline-block; vertical-align: -2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .msg { border-left: 2px solid var(--c, var(--accent)); background: color-mix(in srgb, var(--c, var(--accent)) 9%, transparent); padding: 8px 12px; margin: 0 0 16px; border-radius: 0 4px 4px 0; }
+    .msg.error { --c: var(--danger); } .msg.warn { --c: var(--warn); }
+
+    .summary { display: flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); margin-bottom: 22px; }
+    .stat { flex: 1 1 170px; padding: 10px 16px; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+    .stat:last-child { border-right: 0; }
+    .stat b { font: 600 21px var(--mono); letter-spacing: -.02em; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat span { font-size: 11.5px; color: var(--muted); } .stat em { font: normal 11px var(--mono); color: var(--muted); }
+    .stat.good b { color: var(--ok); } .stat.bad b { color: var(--danger); }
+
+    section.panel { margin-bottom: 26px; }
+    .sec-title { font: 600 10.5px var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-bottom: 7px; margin: 0 0 12px; border-bottom: 1px solid var(--line-2); display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 30px; }
+    .sec-title .small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+    /* AI insights */
+    .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .insight { border: 1px solid var(--line); border-left: 3px solid var(--line-2); border-radius: 6px; background: var(--panel); padding: 11px 14px; }
+    .insight.positive { border-left-color: var(--ok); } .insight.warning { border-left-color: var(--warn); } .insight.neutral { border-left-color: var(--accent); }
+    .insight h3 { margin: 0 0 3px; font-size: 13.5px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+    .insight p { margin: 0; color: var(--ink); } .insight .action { margin-top: 6px; color: var(--muted); font-size: 12.5px; } .insight .action::before { content: "\2192  "; color: var(--accent); }
+    .tag { font: 600 9.5px var(--font); letter-spacing: .08em; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); color: var(--warn); }
+    .ai-foot { margin-top: 10px; font: 11.5px var(--mono); color: var(--muted); }
+    .skeleton { height: 74px; border: 1px solid var(--line); border-radius: 6px; background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* charts */
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .chart-card h3 { margin: 0 0 6px; font: 600 12.5px var(--font); }
+    .chartbox { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 12px 10px 6px; }
+    .chart-card svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .grid { stroke: var(--line); stroke-width: 1; } .axis { fill: var(--muted); font: 10.5px var(--font); } .lbl { fill: var(--ink); font: 11px var(--font); }
+    .line { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+    .point { fill: var(--bg); stroke-width: 2; } .val { fill: var(--ink); font: 600 10.5px var(--mono); }
+    .legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted); margin: 0 0 4px 6px; } .legend i { display: inline-block; width: 10px; height: 3px; margin-right: 6px; vertical-align: 3px; border-radius: 2px; }
+    .empty { color: var(--muted); padding: 40px 12px; text-align: center; }
+
+    /* action tables */
+    .tbl-card { margin-bottom: 20px; }
+    .tbl-card h3 { margin: 0 0 2px; font: 600 13px var(--font); }
+    .tbl-card .hint { margin: 0 0 8px; color: var(--muted); font-size: 12px; max-width: 900px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th { text-align: left; font: 600 10.5px var(--font); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+    td { padding: 7px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; } tbody tr:hover td { background: var(--panel-2); }
+    th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+    td.neg { color: var(--danger); } td.pos { color: var(--ok); }
+    @media (max-width: 860px) { .charts, .ai-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) {
+      .bar-in { padding: 0 14px; gap: 10px; } .logo .sub { display: none; }
+      .nav { overflow-x: auto; scrollbar-width: none; } .nav a { padding: 0 9px; flex: none; }
+      main { padding: 16px 14px 56px; } .controls label { display: none; } select { min-width: 0; flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-in">
+      <a class="logo" href="/" aria-label="StockSense AI">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="17" width="5.5" height="10" fill="var(--accent)"/><rect x="13.25" y="11" width="5.5" height="16" fill="var(--accent)"/><rect x="21.5" y="5" width="5.5" height="22" fill="var(--ink)"/></svg>
+        STOCKSENSE <span class="sub">/ INSIGHTS</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="/">Forecast</a>
+        <a href="/insights" class="active">Insights</a>
+        <a href="http://localhost:8000" target="_blank" rel="noopener">Bill Intake &#8599;</a>
+        <a href="http://localhost:5173" target="_blank" rel="noopener">Assistant &#8599;</a>
+      </nav>
+      <span class="spacer"></span>
+      <button type="button" class="icon-btn" id="theme-toggle" title="Switch light / dark" aria-label="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="head">
+      <h1>Data insights</h1>
+      <span class="muted">Pick a data source to see its charts and AI-written insights</span>
+    </div>
+
+    <div class="controls">
+      <label for="source">Data source</label>
+      <select id="source" aria-label="Data source"></select>
+      <button id="reload">Reload data</button>
+    </div>
+    <p class="where" id="where"></p>
+
+    <div id="error" class="msg error" hidden role="alert"></div>
+    <div id="warnings"></div>
+    <div id="summary" class="summary" hidden></div>
+
+    <section class="panel" id="ai-panel" hidden>
+      <div class="sec-title">AI insights
+        <span><button id="regen" class="primary">Regenerate</button></span>
+      </div>
+      <div id="ai-body"></div>
+      <div class="ai-foot" id="ai-foot"></div>
+    </section>
+
+    <section class="panel" id="tables-panel" hidden>
+      <div class="sec-title">Action lists <span class="small muted">what to do next, from the numbers</span></div>
+      <div id="tables"></div>
+    </section>
+
+    <section class="panel" id="charts-panel" hidden>
+      <div class="sec-title">Charts <span class="small muted" id="notes"></span></div>
+      <div class="charts" id="charts"></div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement; const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next); try { localStorage.setItem('ss-theme', next); } catch (e) {}
+      if (current) drawAll(current);
+    });
+
+    const $ = id => document.getElementById(id);
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const nf = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+    const nf1 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 1 });
+    let current = null, loadToken = 0;
+
+    function short(v) {
+      const a = Math.abs(v);
+      if (a >= 1e7) return (v / 1e7).toFixed(1).replace(/\.0$/, '') + ' Cr';
+      if (a >= 1e5) return (v / 1e5).toFixed(1).replace(/\.0$/, '') + ' L';
+      if (a >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+      return nf1.format(v);
+    }
+    const full = (v, unit) => (unit === '₹' ? '₹' + nf.format(v) : unit === '%' ? nf1.format(v) + '%' : nf1.format(v));
+    function kpiValue(k) {
+      if (k.value === null || k.value === undefined) return '-';
+      if (k.format === 'money') return '₹' + nf.format(k.value);
+      if (k.format === 'percent') return (k.value >= 0 ? '+' : '') + nf1.format(k.value) + '%';
+      if (k.format === 'pct') return nf1.format(k.value) + '%';
+      if (k.format === 'text') return esc(k.value);
+      return nf.format(k.value);
+    }
+
+    /* ---------- generic SVG charts: line (1 or 2 series), bar, hbar ---------- */
+    const COLORS = () => { const s = getComputedStyle(document.documentElement); return [s.getPropertyValue('--accent').trim(), s.getPropertyValue('--accent-2').trim()]; };
+    function drawChart(spec) {
+      const data = spec.data || []; if (!data.length) return '<div class="empty">No data for this chart yet.</div>';
+      const colors = COLORS(); const W = 560, H = spec.type === 'hbar' ? Math.max(200, 34 + data.length * 26) : 270;
+      const gridLines = (x1, x2, ys, fmt) => ys.map(([y, v]) => `<line class="grid" x1="${x1}" x2="${x2}" y1="${y}" y2="${y}"/><text class="axis" x="${x1 - 8}" y="${y + 3.5}" text-anchor="end">${fmt(v)}</text>`).join('');
+      if (spec.type === 'hbar') {
+        const left = 150, right = 70, rowH = 26, top = 6; const max = Math.max(...data.map(d => d.value), 1);
+        const rows = data.map((d, i) => { const w = d.value / max * (W - left - right); const y = top + i * rowH; const label = d.label.length > 24 ? d.label.slice(0, 23) + '…' : d.label;
+          return `<text class="lbl" x="${left - 8}" y="${y + 15}" text-anchor="end"><title>${esc(d.label)}</title>${esc(label)}</text><rect x="${left}" y="${y + 4}" width="${Math.max(w, 1)}" height="15" rx="2" fill="${colors[0]}" opacity=".9"/><text class="val" x="${left + w + 6}" y="${y + 15.5}">${full(d.value, spec.unit)}${spec.unit === 'days' ? ' d' : ''}</text>`; }).join('');
+        return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(spec.title)}">${rows}</svg>`;
+      }
+      const left = 52, right = 14, top = 16, bottom = 34, pw = W - left - right, ph = H - top - bottom;
+      const multi = data.some(d => d.values); const series = multi ? data[0].values.map((_, k) => data.map(d => d.values[k])) : [data.map(d => d.value)];
+      const max = Math.max(...series.flat(), 1) * 1.12; const y = v => top + ph - v / max * ph;
+      const ticks = [0, .25, .5, .75, 1].map(f => [y(max * f), max * f]); const grid = gridLines(left, W - right, ticks, short);
+      const every = Math.ceil(data.length / 8);
+      if (spec.type === 'bar') {
+        const slot = pw / data.length, bw = Math.min(46, slot * .62);
+        const bars = data.map((d, i) => { const cx = left + slot * (i + .5); const h = d.value / max * ph; const label = d.label.length > 11 && data.length > 5 ? d.label.slice(0, 10) + '…' : d.label;
+          return `<rect x="${cx - bw / 2}" y="${y(d.value)}" width="${bw}" height="${Math.max(h, 1)}" rx="2" fill="${colors[0]}" opacity=".9"><title>${esc(d.label)}: ${full(d.value, spec.unit)}</title></rect>` +
+            (data.length <= 9 ? `<text class="val" x="${cx}" y="${y(d.value) - 5}" text-anchor="middle">${spec.unit === '₹' ? '₹' + short(d.value) : spec.unit === '%' ? nf1.format(d.value) + '%' : short(d.value)}</text>` : '') +
+            (i % every === 0 ? `<text class="axis" x="${cx}" y="${H - 14}" text-anchor="middle">${esc(label)}</text>` : ''); }).join('');
+        return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(spec.title)}">${grid}${bars}</svg>`;
+      }
+      const x = i => data.length === 1 ? left + pw / 2 : left + i * pw / (data.length - 1);
+      const lines = series.map((vals, k) => { const c = colors[k % 2]; const path = vals.map((v, i) => `${i ? 'L' : 'M'} ${x(i)} ${y(v)}`).join(' ');
+        const area = k === 0 ? `<path d="${path} L ${x(vals.length - 1)} ${top + ph} L ${x(0)} ${top + ph} Z" fill="${c}" opacity=".12"/>` : '';
+        const dots = vals.map((v, i) => `<circle class="point" cx="${x(i)}" cy="${y(v)}" r="3.6" stroke="${c}"><title>${esc(data[i].label)}: ${full(v, spec.unit)}</title></circle>`).join('');
+        const dash = k === 1 ? ' stroke-dasharray="5 4"' : ''; return `${area}<path class="line" d="${path}" stroke="${c}"${dash}/>${dots}`; }).join('');
+      const xl = data.map((d, i) => (i % every === 0 || i === data.length - 1) ? `<text class="axis" x="${x(i)}" y="${H - 14}" text-anchor="middle">${esc(d.label.length > 7 && /^\d{4}-\d{2}/.test(d.label) ? d.label.slice(0, 7) : d.label)}</text>` : '').join('');
+      const legend = multi && spec.series ? `<div class="legend">${spec.series.map((s, k) => `<span><i style="background:${colors[k % 2]}"></i>${esc(s)}</span>`).join('')}</div>` : '';
+      return `${legend}<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(spec.title)}">${grid}${lines}${xl}</svg>`;
+    }
+
+    function cell(v, f) {
+      if (v === null || v === undefined || v === '') return ['-', ''];
+      if (f === 'money') return ['₹' + nf.format(v), 'num'];
+      if (f === 'int') return [nf.format(v), 'num'];
+      if (f === 'dec') return [nf1.format(v), 'num'];
+      if (f === 'pct') return [(v > 0 ? '+' : '') + nf1.format(v) + '%', 'num ' + (v < 0 ? 'neg' : v > 0 ? 'pos' : '')];
+      return [esc(v), ''];
+    }
+    function drawTable(t) {
+      if (!t.rows.length) return `<div class="tbl-card"><h3>${esc(t.title)}</h3><p class="hint">Nothing to show here right now. That is good news.</p></div>`;
+      const head = t.columns.map(c => `<th class="${c.format === 'text' ? '' : 'num'}">${esc(c.label)}</th>`).join('');
+      const body = t.rows.map(r => '<tr>' + t.columns.map(c => { const [txt, cls] = cell(r[c.key], c.format); return `<td class="${cls}">${txt}</td>`; }).join('') + '</tr>').join('');
+      return `<div class="tbl-card"><h3>${esc(t.title)}</h3><p class="hint">${esc(t.hint)}</p><div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+    }
+
+    function drawAll(ds) {
+      $('tables').innerHTML = (ds.tables || []).map(drawTable).join(''); $('tables-panel').hidden = !(ds.tables || []).length;
+      $('warnings').innerHTML = (ds.warnings || []).map(w => `<div class="msg warn" role="alert"><b>Heads up:</b> ${esc(w)}</div>`).join('');
+      $('summary').innerHTML = ds.kpis.map(k => `<div class="stat ${k.tone || ''}"><b title="${esc(kpiValue(k))}">${kpiValue(k)}</b><span>${esc(k.label)}</span>${k.hint ? `<em>${esc(k.hint)}</em>` : ''}</div>`).join('');
+      $('summary').hidden = false;
+      $('charts').innerHTML = ds.charts.map(c => `<div class="chart-card"><h3>${esc(c.title)}</h3><div class="chartbox">${drawChart(c)}</div></div>`).join('');
+      $('notes').textContent = ds.notes.join(' ');
+      $('charts-panel').hidden = false;
+    }
+
+    function showError(message) { const e = $('error'); e.textContent = message; e.hidden = !message; }
+
+    async function loadAI(refresh) {
+      const token = loadToken; const source = $('source').value;
+      $('ai-panel').hidden = false; $('regen').disabled = true; $('ai-foot').textContent = '';
+      $('ai-body').innerHTML = '<div class="ai-grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>';
+      $('ai-foot').innerHTML = '<span class="spin"></span>&nbsp; Asking the AI to read the numbers (usually 5 to 20 seconds)';
+      try {
+        const r = await fetch(`/api/insights/${source}/ai${refresh ? '?refresh=true' : ''}`, { method: 'POST' });
+        const j = await r.json(); if (token !== loadToken) return;
+        if (!r.ok) throw new Error(j.detail || 'The AI request failed');
+        $('ai-body').innerHTML = '<div class="ai-grid">' + j.insights.map(i => `<div class="insight ${i.tone}"><h3>${esc(i.title)}${i.verified ? '' : ' <span class="tag" title="A number in this insight was not found in the data shown. Check it before relying on it.">check figures</span>'}</h3><p>${esc(i.detail)}</p>${i.action ? `<div class="action">${esc(i.action)}</div>` : ''}</div>`).join('') + '</div>';
+        $('ai-foot').textContent = `Written by ${j.model} from the summary numbers on this page${j.cached ? ' (saved result)' : ''} · ${new Date(j.generated_at).toLocaleTimeString()} · AI can make mistakes, so check anything important.`;
+      } catch (e) { if (token !== loadToken) return; $('ai-body').innerHTML = `<div class="msg error">${esc(e.message)}</div>`; $('ai-foot').textContent = ''; }
+      finally { if (token === loadToken) $('regen').disabled = false; }
+    }
+
+    async function loadSource() {
+      const token = ++loadToken; const source = $('source').value; showError('');
+      $('summary').hidden = true; $('charts-panel').hidden = true; $('tables-panel').hidden = true; $('ai-panel').hidden = true; $('reload').disabled = true;
+      $('summary').innerHTML = ''; $('warnings').innerHTML = ''; $('where').innerHTML = '<span class="spin"></span>&nbsp; Loading…';
+      try {
+        const r = await fetch(`/api/insights/${source}`); const j = await r.json(); if (token !== loadToken) return;
+        if (!r.ok) throw new Error(j.detail || 'Could not load this data source');
+        current = j; $('where').innerHTML = `Connected to <b>${esc(j.where)}</b> · data up to <b>${esc(j.as_of)}</b>`;
+        drawAll(j); loadAI(false);
+      } catch (e) { if (token !== loadToken) return; current = null; $('where').textContent = ''; showError(e.message); }
+      finally { if (token === loadToken) $('reload').disabled = false; }
+    }
+
+    async function init() {
+      try {
+        const r = await fetch('/api/insights/sources'); const j = await r.json();
+        $('source').innerHTML = j.sources.map(s => `<option value="${s.id}" ${s.available ? '' : 'disabled'}>${esc(s.label)}${s.available ? '' : ' (not configured)'}</option>`).join('');
+        const first = j.sources.find(s => s.available); if (!first) { showError('No data sources are configured.'); return; }
+        $('source').value = first.id;
+        $('source').addEventListener('change', loadSource); $('reload').addEventListener('click', loadSource); $('regen').addEventListener('click', () => loadAI(true));
+        if (!j.llm_ready) $('where').textContent = 'No AI key configured: charts will work, AI insights will not.';
+        loadSource();
+      } catch (e) { showError('Could not reach the server: ' + e.message); }
+    }
+    init();
+  </script>
+</body>
+</html>
