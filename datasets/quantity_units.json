@@ -1,0 +1,122 @@
+{
+  "P001": {
+    "product_name": "Amul Toned Milk",
+    "quantity_unit": "pack (milk, original package size unspecified)"
+  },
+  "P002": {
+    "product_name": "Curd 500g",
+    "quantity_unit": "500 g tub"
+  },
+  "P003": {
+    "product_name": "Paneer 200g",
+    "quantity_unit": "200 g pack"
+  },
+  "P004": {
+    "product_name": "Butter 100g",
+    "quantity_unit": "100 g pack"
+  },
+  "P005": {
+    "product_name": "Bread",
+    "quantity_unit": "loaf"
+  },
+  "P006": {
+    "product_name": "Brown Bread",
+    "quantity_unit": "loaf"
+  },
+  "P007": {
+    "product_name": "Eggs 6-pack",
+    "quantity_unit": "6-egg pack"
+  },
+  "P008": {
+    "product_name": "Basmati Rice 1kg",
+    "quantity_unit": "1 kg bag"
+  },
+  "P009": {
+    "product_name": "Wheat Flour 1kg",
+    "quantity_unit": "1 kg bag"
+  },
+  "P010": {
+    "product_name": "Toor Dal 1kg",
+    "quantity_unit": "1 kg bag"
+  },
+  "P011": {
+    "product_name": "Sugar 1kg",
+    "quantity_unit": "1 kg bag"
+  },
+  "P012": {
+    "product_name": "Sunflower Oil 1L",
+    "quantity_unit": "1 L bottle"
+  },
+  "P013": {
+    "product_name": "Salt 1kg",
+    "quantity_unit": "1 kg bag"
+  },
+  "P014": {
+    "product_name": "Tea 250g",
+    "quantity_unit": "250 g pack"
+  },
+  "P015": {
+    "product_name": "Coffee 100g",
+    "quantity_unit": "100 g pack"
+  },
+  "P016": {
+    "product_name": "Cola 750ml",
+    "quantity_unit": "750 mL bottle"
+  },
+  "P017": {
+    "product_name": "Orange Juice 1L",
+    "quantity_unit": "1 L carton"
+  },
+  "P018": {
+    "product_name": "Bottled Water 1L",
+    "quantity_unit": "1 L bottle"
+  },
+  "P019": {
+    "product_name": "Potato Chips",
+    "quantity_unit": "packet (size unspecified)"
+  },
+  "P020": {
+    "product_name": "Biscuits",
+    "quantity_unit": "packet (size unspecified)"
+  },
+  "P021": {
+    "product_name": "Chocolate Bar",
+    "quantity_unit": "bar (size unspecified)"
+  },
+  "P022": {
+    "product_name": "Instant Noodles",
+    "quantity_unit": "packet (size unspecified)"
+  },
+  "P023": {
+    "product_name": "Tomato Ketchup",
+    "quantity_unit": "bottle (size unspecified)"
+  },
+  "P024": {
+    "product_name": "Toothpaste",
+    "quantity_unit": "tube (size unspecified)"
+  },
+  "P025": {
+    "product_name": "Bath Soap",
+    "quantity_unit": "bar (size unspecified)"
+  },
+  "P026": {
+    "product_name": "Shampoo 180ml",
+    "quantity_unit": "180 mL bottle"
+  },
+  "P027": {
+    "product_name": "Detergent 1kg",
+    "quantity_unit": "1 kg pack"
+  },
+  "P028": {
+    "product_name": "Dishwash Liquid",
+    "quantity_unit": "bottle (size unspecified)"
+  },
+  "P029": {
+    "product_name": "Apples 1kg",
+    "quantity_unit": "1 kg"
+  },
+  "P030": {
+    "product_name": "Tomatoes 1kg",
+    "quantity_unit": "1 kg"
+  }
+}
